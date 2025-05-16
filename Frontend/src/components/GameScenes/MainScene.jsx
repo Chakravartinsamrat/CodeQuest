@@ -18,7 +18,7 @@ export default class MainScene extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, 1600, 1200);
     
     // Create player with physics
-    this.player = this.physics.add.sprite(100, 100, "player").setScale(0.01);
+    this.player = this.physics.add.sprite(675, 950, "player").setScale(0.01);
     this.player.setCollideWorldBounds(true);
     
     // Create obstacles
@@ -40,6 +40,22 @@ export default class MainScene extends Phaser.Scene {
       fill: '#ffffff',
       backgroundColor: '#000000'
     }).setScrollFactor(0);
+
+
+    // Create a glowing area using a semi-transparent green rectangle
+    this.glowArea = this.add.rectangle(630, 870, 60, 40, 0x00ff00, 0.4)
+      .setOrigin(0)
+      .setStrokeStyle(2, 0x00ff00, 1);
+
+    // Optionally, make it pulse using tween
+    this.tweens.add({
+      targets: this.glowArea,
+      alpha: { from: 0.2, to: 0.8 },
+      duration: 800,
+      yoyo: true,
+      repeat: -1,
+    });
+
   }
 
   update() {
@@ -61,6 +77,16 @@ export default class MainScene extends Phaser.Scene {
     } else if (this.cursors.down.isDown) {
       this.player.setVelocityY(this.speed);
     }
+
+    if (
+      this.player.x > 630 &&
+      this.player.x < 690 &&  // 630 + 60
+      this.player.y > 870 &&
+      this.player.y < 910     // 870 + 40
+    ) {
+      this.scene.start("KnowledgeScene");
+    }
+
   }
   
   createObstacles() {
