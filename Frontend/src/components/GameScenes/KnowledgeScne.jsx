@@ -47,17 +47,6 @@ export default class KnowledgeScene extends Phaser.Scene {
     this.spacebar = this.input.keyboard.addKey(
       Phaser.Input.Keyboard.KeyCodes.SPACE
     );
-
-    if (Phaser.Input.Keyboard.JustDown(this.spacebar)) {
-      if (
-        Phaser.Geom.Rectangle.Overlaps(
-          this.glowArea.getBounds(),
-          this.player.getBounds()
-        )
-      ) {
-        this.showChallengeDialog();
-      }
-    }
   }
 
   update() {
@@ -78,52 +67,124 @@ export default class KnowledgeScene extends Phaser.Scene {
     } else if (this.cursors.down.isDown) {
       this.player.setVelocityY(this.speed);
     }
+
+    // Check for spacebar press and overlap with glowArea
+    if (
+      Phaser.Input.Keyboard.JustDown(this.spacebar) &&
+      Phaser.Geom.Rectangle.Overlaps(
+        this.glowArea.getBounds(),
+        this.player.getBounds()
+      )
+    ) {
+      this.showChallengeDialog();
+    }
   }
 
   showChallengeDialog() {
-    // Dim background
-    this.dialogBg = this.add
-      .rectangle(800, 600, 400, 200, 0x000000, 0.8)
-      .setOrigin(0.5);
-    this.dialogText = this.add
-      .text(800, 550, "Do you want to challenge us?", {
-        fontSize: "20px",
-        color: "#ffffff",
-        align: "center",
-        wordWrap: { width: 360 },
-      })
-      .setOrigin(0.5);
+    // Get scene dimensions
+    const sceneWidth = this.cameras.main.width - 40;
+    const sceneHeight = this.cameras.main.height - 10; // Position 10px from bottom
 
-    this.yesBtn = this.add
-      .text(740, 630, "Yes", {
-        fontSize: "18px",
-        backgroundColor: "#00aa00",
-        color: "#ffffff",
-        padding: { x: 10, y: 5 },
+    // Create dialog background (white rectangle near bottom)
+    this.dialogBg = this.add
+      .rectangle(sceneWidth / 2 + 10, sceneHeight + 75, sceneWidth, 150, 0xffffff, 1)
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setStrokeStyle(2, 0x000000, 1); // Black border
+
+    // Add shadow for floating effect
+    this.dialogShadow = this.add
+      .rectangle(sceneWidth / 2 + 15, sceneHeight + 80, sceneWidth, 150, 0x000000, 0.3)
+      .setOrigin(0.5)
+      .setScrollFactor(0);
+
+    // Move dialog and shadow to final position with animation
+    this.tweens.add({
+      targets: [this.dialogBg, this.dialogShadow],
+      y: sceneHeight - 75, // Adjusted to be 10px from bottom
+      duration: 300,
+      ease: "Power2",
+    });
+
+    // Add dialog text (black, centered)
+    this.dialogText = this.add
+      .text(sceneWidth / 2 + 10, sceneHeight - 125, "Do you want to challenge me?", {
+        fontSize: "24px",
+        fontFamily: "Arial, sans-serif",
+        color: "#000000",
+        align: "center",
+        wordWrap: { width: sceneWidth - 200 }, // Adjust for padding
       })
-      .setInteractive()
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setAlpha(0);
+
+    // Animate text fade-in
+    this.tweens.add({
+      targets: this.dialogText,
+      alpha: 1,
+      duration: 300,
+      delay: 200,
+    });
+
+    // Add Yes button (green)
+    this.yesBtn = this.add
+      .text(sceneWidth / 2 - 100, sceneHeight - 45, "Yes", {
+        fontSize: "20px",
+        fontFamily: "Arial, sans-serif",
+        backgroundColor: "#28a745",
+        color: "#ffffff",
+        padding: { x: 20, y: 10 },
+        align: "center",
+        shadow: { offsetX: 2, offsetY: 2, color: "#000000", blur: 4, fill: true },
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setInteractive({ useHandCursor: true })
+      .setAlpha(0)
       .on("pointerdown", () => {
         this.destroyDialog();
         this.scene.start("NextScene"); // Replace with your actual scene
-      });
-
-    this.noBtn = this.add
-      .text(840, 630, "No", {
-        fontSize: "18px",
-        backgroundColor: "#aa0000",
-        color: "#ffffff",
-        padding: { x: 10, y: 5 },
       })
-      .setInteractive()
+      .on("pointerover", () => this.yesBtn.setStyle({ backgroundColor: "#218838" }))
+      .on("pointerout", () => this.yesBtn.setStyle({ backgroundColor: "#28a745" }));
+
+    // Add No button (red)
+    this.noBtn = this.add
+      .text(sceneWidth / 2 + 100, sceneHeight - 45, "No", {
+        fontSize: "20px",
+        fontFamily: "Arial, sans-serif",
+        backgroundColor: "#dc3545",
+        color: "#ffffff",
+        padding: { x: 20, y: 10 },
+        align: "center",
+        shadow: { offsetX: 2, offsetY: 2, color: "#000000", blur: 4, fill: true },
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setInteractive({ useHandCursor: true })
+      .setAlpha(0)
       .on("pointerdown", () => {
         this.destroyDialog();
-      });
+      })
+      .on("pointerover", () => this.noBtn.setStyle({ backgroundColor: "#c82333" }))
+      .on("pointerout", () => this.noBtn.setStyle({ backgroundColor: "#dc3545" }));
+
+    // Animate buttons fade-in
+    this.tweens.add({
+      targets: [this.yesBtn, this.noBtn],
+      alpha: 1,
+      duration: 300,
+      delay: 300,
+    });
   }
 
   destroyDialog() {
-    this.dialogBg.destroy();
-    this.dialogText.destroy();
-    this.yesBtn.destroy();
-    this.noBtn.destroy();
+    // Safely destroy dialog elements if they exist
+    if (this.dialogBg) this.dialogBg.destroy();
+    if (this.dialogShadow) this.dialogShadow.destroy();
+    if (this.dialogText) this.dialogText.destroy();
+    if (this.yesBtn) this.yesBtn.destroy();
+    if (this.noBtn) this.noBtn.destroy();
   }
 }
