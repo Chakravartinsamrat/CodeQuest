@@ -9,7 +9,7 @@ function App() {
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Add event listener for fullscreen changes
-  useEffect(() => {
+  useEffect(() => { 
     const handleFullscreenChange = () => {
       const fullscreenActive = !!document.fullscreenElement;
       setIsFullscreen(fullscreenActive);
