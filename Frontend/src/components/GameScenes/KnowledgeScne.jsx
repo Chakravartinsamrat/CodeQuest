@@ -1,3 +1,5 @@
+import NavigationController from "../Routes/NavigationController";
+
 export default class KnowledgeScene extends Phaser.Scene {
   constructor() {
     super("KnowledgeScene");
@@ -47,6 +49,15 @@ export default class KnowledgeScene extends Phaser.Scene {
     this.spacebar = this.input.keyboard.addKey(
       Phaser.Input.Keyboard.KeyCodes.SPACE
     );
+
+    this.yes = this.input.keyboard.addKey(
+      Phaser.Input.Keyboard.KeyCodes.Y
+    );
+
+    this.no = this.input.keyboard.addKey(
+      Phaser.Input.Keyboard.KeyCodes.N
+    )
+    this.navController = new NavigationController(this);
   }
 
   update() {
@@ -190,4 +201,6 @@ export default class KnowledgeScene extends Phaser.Scene {
     if (this.yesBtn) this.yesBtn.destroy();
     if (this.noBtn) this.noBtn.destroy();
   }
+
+  
 }
