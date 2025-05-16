@@ -19,7 +19,11 @@ export default class MainScene extends Phaser.Scene {
     
     // Create player with physics
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     this.player = this.physics.add.sprite(675, 950, "player").setScale(0.01);
+=======
+    this.player = this.physics.add.sprite(810, 539, "player").setScale(0.01);
+>>>>>>> Stashed changes
 =======
     this.player = this.physics.add.sprite(810, 539, "player").setScale(0.01);
 >>>>>>> Stashed changes
