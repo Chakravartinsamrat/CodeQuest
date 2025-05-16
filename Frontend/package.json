@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@google/genai": "^0.14.1",
+    "@google/generative-ai": "^0.24.1",
     "@tailwindcss/vite": "^4.1.7",
     "phaser": "^3.88.2",
     "react": "^19.1.0",
