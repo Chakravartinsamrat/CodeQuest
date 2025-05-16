@@ -18,7 +18,11 @@ export default class MainScene extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, 1600, 1200);
     
     // Create player with physics
+<<<<<<< Updated upstream
     this.player = this.physics.add.sprite(675, 950, "player").setScale(0.01);
+=======
+    this.player = this.physics.add.sprite(810, 539, "player").setScale(0.01);
+>>>>>>> Stashed changes
     this.player.setCollideWorldBounds(true);
     
     // Create obstacles
@@ -96,12 +100,50 @@ export default class MainScene extends Phaser.Scene {
     // Add map border obstacles with red outlines
     this.createBorders();
     
-    // Add some obstacle rectangles in the map
-    this.createObstacleRect(300, 200, 200, 50);
-    this.createObstacleRect(335, 359, 135, 120);
-    this.createObstacleRect(700, 400, 100, 300);
-    this.createObstacleRect(400, 600, 350, 80);
-    this.createObstacleRect(1000, 200, 50, 400);
+    // Grass TOP TO BOTTOM LEFT SIDE
+    this.createObstacleRect(345, 220, 300, 40);
+    this.createObstacleRect(300, 200, 30, 90);
+    this.createObstacleRect(650, 20, 50, 190);
+    this.createObstacleRect(170, 270,120, 30);
+    this.createObstacleRect(160, 344 ,50, 700);
+    this.createObstacleRect(170, 600 ,180, 100);
+    this.createObstacleRect(375, 644 ,60, 20);
+
+    //buildings
+    this.createObstacleRect(335, 370, 130, 75);
+    this.createObstacleRect(585, 590, 180, 30);
+    this.createObstacleRect(835, 385, 100, 50);
+    this.createObstacleRect(1010, 397, 100, 40);
+    this.createObstacleRect(590, 780, 150, 50);
+    this.createObstacleRect(945, 800, 100, 50);
+    this.createObstacleRect(1115, 793, 100, 50);
+    this.createObstacleRect(285,814, 80, 30);
+
+    //grass bottom
+    this.createObstacleRect(185, 1060 ,260, 120);
+    this.createObstacleRect(555, 1080, 700, 50);
+    this.createObstacleRect(775, 968, 200, 100);
+    this.createObstacleRect(1295, 989, 200, 200);
+    this.createObstacleRect(1000, 1049, 270, 10);
+    this.createObstacleRect(235, 1025, 50, 20);
+
+    //grass anna right side
+    this.createObstacleRect(1420, 254, 40, 1300);
+    this.createObstacleRect(1270, 569, 120, 70);
+
+    //grass top right
+    this.createObstacleRect(800, 229, 1000, 20);
+    this.createObstacleRect(800, 21, 20, 200);
+
+    //inside city trees
+    this.createObstacleRect(560, 419, 60, 50);
+    this.createObstacleRect(890, 719, 60, 50);
+    this.createObstacleRect(970, 280, 100, 10);
+    this.createObstacleRect(1275, 280, 100, 10);
+
+    // this.createObstacleRect(700, 400, 100, 300);
+    // this.createObstacleRect(400, 600, 350, 80);
+    // this.createObstacleRect(1000, 200, 50, 400);
   }
   
   createBorders() {
