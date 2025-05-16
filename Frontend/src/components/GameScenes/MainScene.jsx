@@ -57,6 +57,20 @@ export default class MainScene extends Phaser.Scene {
       repeat: -1,
     });
 
+    // Create a glowing area using a semi-transparent green rectangle
+this.challengeGlowScene = this.add.rectangle(955, 875, 20, 10, 0x0000FF, 0.4)
+  .setOrigin(0)
+  .setStrokeStyle(2, 0x00ff00, 1);
+
+// Optionally, make it pulse using tween
+this.tweens.add({
+  targets: this.challengeGlowScene,
+  alpha: { from: 0.2, to: 0.8 },
+  duration: 800,
+  yoyo: true,
+  repeat: -1,
+});
+
   }
 
   update() {
@@ -87,6 +101,16 @@ export default class MainScene extends Phaser.Scene {
     ) {
       this.scene.start("KnowledgeScene");
     }
+  if (
+    this.player.x >= 955 &&
+    this.player.x <= 975 && // 955 + 20 (rectangle width)
+    this.player.y >= 875 &&
+    this.player.y <= 885    // 875 + 10 (rectangle height)
+  ) {
+    // Start ChallengeScene and pass player position
+    this.scene.start("ChallengeScene", { playerX: 855, playerY: 1003 });
+  }
+
 
   }
   
