@@ -1,3 +1,4 @@
+import NavigationController from "../Routes/NavigationController";
 export default class ContentScene extends Phaser.Scene {
   constructor() {
     super("ContentScene");
@@ -55,6 +56,6 @@ export default class ContentScene extends Phaser.Scene {
     // Set up spacebar interaction
     this.spacebar = this.input.keyboard.addKey(
       Phaser.Input.Keyboard.KeyCodes.SPACE
-    );
+    )
   }
 }

@@ -79,6 +79,13 @@ this.tweens.add({
   yoyo: true,
   repeat: -1,
 });
+
+this.input.keyboard.on('keydown-P', (event) => {
+    if (event.shiftKey) {
+      // Launch the menu scene as an overlay
+      this.scene.launch('MenuScene');
+    }
+  });
   }
 
   update() {

@@ -1,3 +1,5 @@
+import NavigationController from "../Routes/NavigationController";
+
 export default class ChallengeScene extends Phaser.Scene {
   constructor() {
     super("ChallengeScene");
@@ -65,6 +67,7 @@ export default class ChallengeScene extends Phaser.Scene {
     this.spacebar = this.input.keyboard.addKey(
       Phaser.Input.Keyboard.KeyCodes.SPACE
     );
+    this.navController = new NavigationController(this);
   }
 
   update() {
