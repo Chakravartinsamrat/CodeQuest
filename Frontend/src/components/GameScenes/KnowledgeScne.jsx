@@ -144,7 +144,10 @@ export default class KnowledgeScene extends Phaser.Scene {
       .setAlpha(0)
       .on("pointerdown", () => {
         this.destroyDialog();
-        this.scene.start("NextScene"); // Replace with your actual scene
+        this.scene.start("ContentScene", {
+            challengeAccepted: true,
+            playerPos: { x: this.player.x, y: this.player.y }
+        });
       })
       .on("pointerover", () => this.yesBtn.setStyle({ backgroundColor: "#218838" }))
       .on("pointerout", () => this.yesBtn.setStyle({ backgroundColor: "#28a745" }));

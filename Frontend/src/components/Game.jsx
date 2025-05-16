@@ -3,6 +3,7 @@ import React, { useEffect, useRef } from 'react';
 import Phaser from 'phaser';
 import MainScene from './GameScenes/MainScene.jsx'; // Adjust the import path as necessary
 import KnowledgeScene from './GameScenes/KnowledgeScne.jsx'; // Adjust the import path as necessary
+import ContentScene from './GameScenes/ContentScene.jsx'; // Adjust the import path as necessary
 
 const Game = () => {
   const gameRef = useRef(null);
@@ -14,7 +15,7 @@ const Game = () => {
       width: 800,
       height: 600,
       parent: gameRef.current,
-      scene: [MainScene, KnowledgeScene], // Add your scenes here
+      scene: [MainScene, KnowledgeScene, ContentScene], // Add your scenes here
       physics: {
         default: 'arcade',
         arcade: {
