@@ -16,6 +16,7 @@ export default class MainScene extends Phaser.Scene {
     // Set world bounds 
     this.physics.world.setBounds(0, 0, 1600, 1200);
     this.cameras.main.setBounds(0, 0, 1600, 1200);
+    this.cameras.main.setZoom(1.5);
     
     // Create player with physics
     this.player = this.physics.add.sprite(675, 950, "player").setScale(0.01);
@@ -29,7 +30,7 @@ export default class MainScene extends Phaser.Scene {
     this.physics.add.collider(this.player, this.obstacles);
     
     // Setup camera to follow player
-    this.cameras.main.startFollow(this.player);
+    this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
 
     // Setup controls
     this.cursors = this.input.keyboard.createCursorKeys();
@@ -71,6 +72,13 @@ this.tweens.add({
   repeat: -1,
 });
 
+this.input.keyboard.on('keydown-P', (event) => {
+  console.log("working")
+    if (event.shiftKey) {
+      // Launch the menu scene as an overlay
+      this.scene.launch('MenuScene');
+    }
+  });
   }
 
   update() {
