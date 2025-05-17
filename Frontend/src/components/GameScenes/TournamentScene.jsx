@@ -1,78 +1,82 @@
 import NavigationController from "../Routes/NavigationController";
 
-export default class KnowledgeScene extends Phaser.Scene {
-  constructor() {
-    super("KnowledgeScene");
-  }
+export default class GymScene extends Phaser.Scene{
+    constructor() {
+        super("TournamentScene");
+    }
 
-  preload() {
-    this.load.image("Knowledge-Arena.webp", "/Knowledge-Arena.webp");
-    this.load.image("player", "/BOSS.png");
-  }
+    preload() {
+        this.load.image("Gym-Arena.webp", "/Tournament~4.avif");
+        this.load.image("player", "/BOSS.png");
+    }
 
-  create() {
-    const bg = this.add.image(0, 0, "Knowledge-Arena.webp").setOrigin(0);
-    bg.setDisplaySize(1600, 1200);
+    create() {
+        const bg = this.add.image(0, 0, "Gym-Arena.webp").setOrigin(0);
+        bg.setDisplaySize(1000, 600); // match world and camera bounds exactly
 
-    this.physics.world.setBounds(0, 0, 1600, 1200);
-    this.cameras.main.setBounds(0, 0, 1600, 1200);
+        this.physics.world.setBounds(0, 0, 1000, 600);
+        this.cameras.main.setBounds(0, 0, 1000, 300);
 
-    // Add player
-    this.player = this.physics.add.sprite(745, 1169, "player").setScale(0.02);
-    this.player.setCollideWorldBounds(true);
 
-    this.cameras.main.startFollow(this.player);
-    this.cursors = this.input.keyboard.createCursorKeys();
-    this.speed = 300;
+        // Add player
+        this.player = this.physics.add.sprite(500, 408, "player").setScale(0.02);
+        this.player.setCollideWorldBounds(true);
 
-    this.debugText = this.add
-      .text(10, 10, "Use arrow keys to move", {
-        fontSize: "16px",
-        fill: "#ffffff",
-        backgroundColor: "#000000",
-      })
-      .setScrollFactor(0);
+        this.cameras.main.startFollow(this.player);
+        this.cursors = this.input.keyboard.createCursorKeys();
+        this.speed = 300;
 
-    this.glowArea = this.add
-      .rectangle(625, 1073, 20, 20, 0x00ff00, 0.4)
-      .setOrigin(0)
-      .setStrokeStyle(2, 0x00ff00, 1);
-    this.tweens.add({
-      targets: this.glowArea,
-      alpha: { from: 0.2, to: 0.8 },
-      duration: 800,
-      yoyo: true,
-      repeat: -1,
-    });
+        this.debugText = this.add
+            .text(10, 10, "Use arrow keys to move", {
+                fontSize: "16px",
+                fill: "#ffffff",
+                backgroundColor: "#000000",
+            })
+            .setScrollFactor(0);
 
-    this.player.setInteractive();
-    this.spacebar = this.input.keyboard.addKey(
-      Phaser.Input.Keyboard.KeyCodes.SPACE
-    );
+        this.glowArea = this.add
+            .rectangle(500, 398, 20, 20, 0x00ff00, 0.4)
+            .setOrigin(0)
+            .setStrokeStyle(2, 0x00ff00, 1);
+        this.tweens.add({
+            targets: this.glowArea,
+            alpha: { from: 0.2, to: 0.8 },
+            duration: 800,
+            yoyo: true,
+            repeat: -1,
+        });
 
-    this.navController = new NavigationController(this);
-  }
+        // this.showChallengeDialog()
 
-  update() {
-    this.debugText.setText(
-      `Player pos: ${Math.round(this.player.x)}, ${Math.round(this.player.y)}`
-    );
+        // Add spacebar interaction
+        this.player.setInteractive();
+        this.spacebar = this.input.keyboard.addKey(
+            Phaser.Input.Keyboard.KeyCodes.SPACE
+        );
+        this.speed = 300
+        this.navController = new NavigationController(this);    
 
-    this.player.setVelocity(0);
+    }
+
+    update() {
+        this.player.setVelocity(0);
 
     if (this.cursors.left.isDown) {
-      this.player.setVelocityX(-this.speed);
+        this.player.setVelocityX(-this.speed);
     } else if (this.cursors.right.isDown) {
-      this.player.setVelocityX(this.speed);
+        this.player.setVelocityX(this.speed);
     }
 
     if (this.cursors.up.isDown) {
-      this.player.setVelocityY(-this.speed);
+        this.player.setVelocityY(-this.speed);
     } else if (this.cursors.down.isDown) {
-      this.player.setVelocityY(this.speed);
+        this.player.setVelocityY(this.speed);
     }
+        // Update player position text
+        this.debugText.setText(
+            `Player pos: ${Math.round(this.player.x)}, ${Math.round(this.player.y)}`
+        );
 
-    // Check for spacebar press and overlap with glowArea
     if (
       Phaser.Input.Keyboard.JustDown(this.spacebar) &&
       Phaser.Geom.Rectangle.Overlaps(
@@ -82,9 +86,9 @@ export default class KnowledgeScene extends Phaser.Scene {
     ) {
       this.showChallengeDialog();
     }
-  }
+    }
 
-  showChallengeDialog() {
+    showChallengeDialog() {
     // Get scene dimensions
     const sceneWidth = this.cameras.main.width - 40;
     const sceneHeight = this.cameras.main.height - 10; // Position 10px from bottom
@@ -112,7 +116,7 @@ export default class KnowledgeScene extends Phaser.Scene {
 
     // Add dialog text (black, centered)
     this.dialogText = this.add
-      .text(sceneWidth / 2 + 10, sceneHeight - 125, "Do you want to challenge me?", {
+      .text(sceneWidth / 2 + 10, sceneHeight - 125, "Jion tournament?", {
         fontSize: "24px",
         fontFamily: "Arial, sans-serif",
         color: "#000000",
@@ -148,7 +152,7 @@ export default class KnowledgeScene extends Phaser.Scene {
       .setAlpha(0)
       .on("pointerdown", () => {
         this.destroyDialog(); 
-        this.showLearningDialog();
+        this.showTournamentInterface();
         // this.scene.start("ContentScene", {
         //     challengeAccepted: true,
         //     playerPos: { x: this.player.x, y: this.player.y }
@@ -187,7 +191,7 @@ export default class KnowledgeScene extends Phaser.Scene {
     });
   }
 
-  destroyDialog() {
+  destroyDialog() { 
     // Safely destroy dialog elements if they exist
     if (this.dialogBg) this.dialogBg.destroy();
     if (this.dialogShadow) this.dialogShadow.destroy();
@@ -196,11 +200,11 @@ export default class KnowledgeScene extends Phaser.Scene {
     if (this.noBtn) this.noBtn.destroy();
   }
 
-  showLearningDialog() {
+  showTournamentInterface() {
     const playerPos = { x: this.player.x, y: this.player.y };
     this.game.registry.set("playerPos", playerPos);
     if (window.showChallengeInterface) {
-      window.showLearningInterface();
+      window.showTournamentInterface();
       // this.scene.pause();
     } else {
       console.error("React Challengeinterface.jsx not available");

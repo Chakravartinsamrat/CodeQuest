@@ -1,21 +1,24 @@
-// src/components/Game.js
 import React, { useEffect, useRef } from 'react';
 import Phaser from 'phaser';
-import MainScene from './GameScenes/MainScene.jsx'; // Adjust the import path as necessary
-import KnowledgeScene from './GameScenes/KnowledgeScne.jsx'; // Adjust the import path as necessary
-import ContentScene from './GameScenes/ContentScene.jsx'; // Adjust the import path as necessary
+import MainScene from './GameScenes/MainScene.jsx';
+import KnowledgeScene from './GameScenes/KnowledgeScne.jsx';
+import ContentScene from './GameScenes/ContentScene.jsx';
+import ChallengeScene from './GameScenes/ChallengeScene.jsx';
+import MenuScene from './GameScenes/menuScene.jsx';
+import TournamentScene from './GameScenes/TournamentScene.jsx';
+import GymScene from './GameScenes/GymScene.jsx';
 
-const Game = () => {
+const Game = ({ w, h, isFullscreen }) => {
   const gameRef = useRef(null);
+  const gameInstanceRef = useRef(null);
 
   useEffect(() => {
-
     const config = {
       type: Phaser.AUTO,
-      width: 800,
-      height: 600,
+      width: w,
+      height: h,
       parent: gameRef.current,
-      scene: [MainScene, KnowledgeScene, ContentScene], // Add your scenes here
+      scene: [MainScene, KnowledgeScene, ContentScene, ChallengeScene, MenuScene, TournamentScene, GymScene],
       physics: {
         default: 'arcade',
         arcade: {
@@ -23,16 +26,30 @@ const Game = () => {
           debug: false,
         },
       },
+      scale: {
+        mode: Phaser.Scale.RESIZE,
+        width: w,
+        height: h,
+      },
     };
 
-    const game = new Phaser.Game(config);
+    // Only create a new game if one doesn't exist
+    if (!gameInstanceRef.current) {
+      gameInstanceRef.current = new Phaser.Game(config);
+    } else {
+      // If the game exists, just resize it
+      gameInstanceRef.current.scale.resize(w, h);
+    }
 
     return () => {
-      game.destroy(true); // Clean up on unmount
+      if (gameInstanceRef.current) {
+        gameInstanceRef.current.destroy(true);
+        gameInstanceRef.current = null;
+      }
     };
-  }, []);
+  }, [w, h]); // Only recreate when dimensions change
 
-  return <div ref={gameRef} />;
+  return <div ref={gameRef} style={{ width: w, height: h }} />;
 };
 
 export default Game;
