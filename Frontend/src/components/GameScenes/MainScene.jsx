@@ -10,7 +10,29 @@ export default class MainScene extends Phaser.Scene {
     super("MainScene");
     this.trainingSpots = [];
     this.inTrainingCooldown = false;
+    this.gameId = null; // Initialize as null, will be set in init()
   }
+
+  init(data) {
+  // Multiple ways to get gameId, in order of preference:
+  // 1. From scene data passed directly
+  // 2. From game instance if added with preBoot
+  // 3. From window object (React state)
+  // 4. Default fallback
+  if (data && data.gameId) {
+    this.gameId = data.gameId;
+    console.log('MainScene: Using gameId from scene data:', this.gameId);
+  } else if (this.game && this.game.gameId) {
+    this.gameId = this.game.gameId;
+    console.log('MainScene: Using gameId from game instance:', this.gameId);
+  } else if (window.gameId) {
+    this.gameId = window.gameId;
+    console.log('MainScene: Using gameId from window object:', this.gameId);
+  } else {
+    this.gameId = 'DSA'; // Default fallback
+    console.log('MainScene: Using default gameId:', this.gameId);
+  }
+}
 
   preload() {
     // Load your character sprite sheet with fixed dimensions
@@ -217,15 +239,15 @@ export default class MainScene extends Phaser.Scene {
       this.interactHint?.destroy();
       this.interactHint = null;
     }
+
     if (
-      this.player.x >= 1020 &&
-      this.player.x <= 1080 && // 955 + 20 (rectangle width)
-      this.player.y >= 1065 &&
-      this.player.y <= 1125    // 875 + 10 (rectangle height)
-    ) {
-      sceneManager.navigateToScene(this, "GruntScene");
-    }
-  
+    this.player.x >= 1020 &&
+    this.player.x <= 1080 && // 955 + 20 (rectangle width)
+    this.player.y >= 1065 &&
+    this.player.y <= 1125    // 875 + 10 (rectangle height)
+  ) {
+    sceneManager.navigateToScene(this, "GruntScene");
+  }
   }
 
   createGlowArea(x, y, width, height, color) {
@@ -244,6 +266,7 @@ export default class MainScene extends Phaser.Scene {
   }
 
   
+
   isInArea(x, y, width, height) {
     return (
       this.player.x >= x &&
@@ -315,7 +338,7 @@ export default class MainScene extends Phaser.Scene {
     });
   }
 
-  addNpcTrigger(x, y, message) {
+  addNpcTrigger(x, y, message){
     const npcZone = this.add.zone(x, y, 50, 50);
     this.add.rectangle(x, y, 50, 50, 0xff0000, 0.5).setOrigin(0);
     this.physics.world.enable(npcZone);

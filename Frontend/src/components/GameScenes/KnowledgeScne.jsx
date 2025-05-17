@@ -26,6 +26,22 @@ export default class KnowledgeScene extends Phaser.Scene {
     };
   }
 
+  init(data){
+    if (data && data.gameId) {
+      this.gameId = data.gameId;
+      console.log('MainScene: Using gameId from scene data:', this.gameId);
+    } else if (this.game && this.game.gameId) {
+      this.gameId = this.game.gameId;
+      console.log('MainScene: Using gameId from game instance:', this.gameId);
+    } else if (window.gameId) {
+      this.gameId = window.gameId;
+      console.log('MainScene: Using gameId from window object:', this.gameId);
+    } else {
+      this.gameId = 'DSA'; // Default fallback
+      console.log('MainScene: Using default gameId:', this.gameId);
+    }
+  }
+
   preload() {
     this.load.image("Knowledge-Arena.webp", "/Knowledge-Arena.webp");
     this.load.image("player", "/BOSS.png");

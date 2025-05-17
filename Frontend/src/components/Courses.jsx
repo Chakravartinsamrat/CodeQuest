@@ -49,7 +49,7 @@ export default function CoursesSection() {
                 alt={course.title}
                 className="w-full h-48 object-cover brightness-90 hover:brightness-100 transition"
               />
-              <a href="/game" className="block hover:no-underline">
+              <a href="/game?gameId=${course.title}" className="block hover:no-underline">
                 <div className="p-6 text-left hover:bg-[#20243a] transition-colors duration-300 rounded-b-3xl">
                   <h4 className="text-xs text-green-400 uppercase mb-1 tracking-widest">Course</h4>
                   <h3 className="text-2xl font-bold mb-2">{course.title}</h3>
