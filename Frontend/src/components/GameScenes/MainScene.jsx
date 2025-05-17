@@ -2,6 +2,8 @@
 import ObstacleManager from "../utils/ObstracleManager";
 import NavigationController from "../Routes/NavigationController";
 import sceneManager from "../utils/SceneManager";
+import PlayerController from "../utils/PlayerController.js";
+
 
 export default class MainScene extends Phaser.Scene {
   constructor() {
@@ -11,6 +13,17 @@ export default class MainScene extends Phaser.Scene {
   }
 
   preload() {
+    // Load your character sprite sheet with fixed dimensions
+    this.load.spritesheet('character', 
+      // Use your actual sprite sheet path here
+      '/PlayerMovement.png',  
+      { 
+        frameWidth: 16,   // Make sure these match your sprite sheet's actual dimensions
+        frameHeight: 24   // Make sure these match your sprite sheet's actual dimensions
+      }
+    );
+    
+    // Keep your original assets as well
     this.load.image("player", "/BOSS.png");
     this.load.image("background", "/Volt-Town.webp");
   }
@@ -23,10 +36,20 @@ export default class MainScene extends Phaser.Scene {
     // Set world bounds
     this.physics.world.setBounds(0, 0, 1600, 1200);
     this.cameras.main.setBounds(0, 0, 1600, 1200);
-    this.cameras.main.setZoom(1.5)
+    
+    // OPTION 1: Use the PlayerController with your character sprite sheet
+    try {
+      this.playerController = new PlayerController(this, 'character', 675, 950, 2);
+      this.player = this.playerController.getPlayer();
+    } catch (error) {
+      console.error("Error creating PlayerController, falling back to original player:", error);
+      // OPTION 2: Fall back to original player if sprite sheet doesn't work
+      this.fallbackToOriginalPlayer();
+    }
+    
 
-    // Create player
-    this.player = this.physics.add.sprite(675, 950, "player").setScale(0.01);
+
+    
     this.player.setCollideWorldBounds(true);
 
     // Create obstacles
@@ -37,6 +60,8 @@ export default class MainScene extends Phaser.Scene {
 
     // Camera follows player
     this.cameras.main.startFollow(this.player);
+        this.cameras.main.setZoom(1.5)
+
 
     // Controls
     this.cursors = this.input.keyboard.createCursorKeys();
@@ -107,17 +132,39 @@ export default class MainScene extends Phaser.Scene {
     });
   }
 
-  update() {
-    this.debugText.setText(
-      `Player pos: ${Math.round(this.player.x)}, ${Math.round(this.player.y)}`
-    );
 
+  update() {
+    try {
+      if (this.playerController) {
+        // Update player movement and animations through the controller
+        const playerStatus = this.playerController.update();
+      } else {
+        // Original movement code from your MainScene
+        this.updateOriginalPlayer();
+      }
+      
+      // Update debug text
+      this.debugText.setText(`Player pos: ${Math.round(this.player.x)}, ${Math.round(this.player.y)}`);
+      
+      // Check for interactions with glowing areas
+    } catch (error) {
+      console.error("Error in update:", error);
+    }
+  
+
+    // Reset velocity
     this.player.setVelocity(0);
 
     if (this.cursors.left.isDown) this.player.setVelocityX(-this.speed);
     else if (this.cursors.right.isDown) this.player.setVelocityX(this.speed);
 
-    if (this.cursors.up.isDown) this.player.setVelocityY(-this.speed);
+    if (this.cursors.up.isDown) {
+      this.player.setVelocityY(-this.speed);
+    } else if (this.cursors.down.isDown) {
+      this.player.setVelocityY(this.speed);
+    }
+
+      if (this.cursors.up.isDown) this.player.setVelocityY(-this.speed);
     else if (this.cursors.down.isDown) this.player.setVelocityY(this.speed);
 
     // Navigation to different scenes
@@ -127,6 +174,7 @@ export default class MainScene extends Phaser.Scene {
 
     if (this.isInArea(955, 875, 20, 10)) {
       this.scene.start("ChallengeScene", { playerX: 855, playerY: 1003 });
+      sceneManager.navigateToScene(this,"ChallengeScene");
     }
 
     if (this.isInArea(585, 665, 50, 10)) {
@@ -543,3 +591,9 @@ export default class MainScene extends Phaser.Scene {
     return questions[Math.floor(Math.random() * questions.length)];
   }
 }
+
+
+
+  
+
+  

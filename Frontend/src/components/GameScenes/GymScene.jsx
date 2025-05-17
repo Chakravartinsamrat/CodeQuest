@@ -1,5 +1,5 @@
 import NavigationController from "../Routes/NavigationController";
-
+import PlayerController from "../utils/PlayerController";
 export default class GymScene extends Phaser.Scene {
   constructor() {
     super("GymScene");
@@ -8,8 +8,15 @@ export default class GymScene extends Phaser.Scene {
   preload() {
     this.load.image("Gym-Arena.webp", "/Gym-Arena.webp");
     this.load.image("player", "/BOSS.png");
-    // Preload assets for Pokémon-style battle transition
-    this.load.image("battleBackground", "/battle-background.png"); // You'll need to create this asset
+    this.load.spritesheet(
+      "character",
+      // Use your actual sprite sheet path here
+      "/PlayerMovement.png",
+      {
+        frameWidth: 16, // Make sure these match your sprite sheet's actual dimensions
+        frameHeight: 24, // Make sure these match your sprite sheet's actual dimensions
+      }
+    );
   }
 
   create() {
@@ -20,7 +27,24 @@ export default class GymScene extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, 1600, 1200);
 
     // Add player
-    this.player = this.physics.add.sprite(745, 1169, "player").setScale(0.02);
+    // this.player = this.physics.add.sprite(745, 1169, "player").setScale(0.02);
+    try {
+          this.playerController = new PlayerController(
+            this,
+            "character",
+            675,
+            950,
+            4
+          );
+          this.player = this.playerController.getPlayer();
+        } catch (error) {
+          console.error(
+            "Error creating PlayerController, falling back to original player:",
+            error
+          );
+          // OPTION 2: Fall back to original player if sprite sheet doesn't work
+          this.fallbackToOriginalPlayer();
+        }
     this.player.setCollideWorldBounds(true);
 
     this.cameras.main.startFollow(this.player);
@@ -61,6 +85,8 @@ export default class GymScene extends Phaser.Scene {
       repeat: -1,
     });
 
+    // this.showChallengeDialog()
+
     // Add spacebar interaction
     this.player.setInteractive();
     this.spacebar = this.input.keyboard.addKey(
@@ -71,6 +97,24 @@ export default class GymScene extends Phaser.Scene {
   }
 
   update() {
+    try {
+      if (this.playerController) {
+        // Update player movement and animations through the controller
+        const playerStatus = this.playerController.update();
+      } else {
+        // Original movement code from your MainScene
+        this.updateOriginalPlayer();
+      }
+
+      // Update debug text
+      this.debugText.setText(
+        `Player pos: ${Math.round(this.player.x)}, ${Math.round(this.player.y)}`
+      );
+
+      // Check for interactions with glowing areas
+    } catch (error) {
+      console.error("Error in update:", error);
+    }
     this.player.setVelocity(0);
 
     if (this.cursors.left.isDown) {
@@ -84,7 +128,6 @@ export default class GymScene extends Phaser.Scene {
     } else if (this.cursors.down.isDown) {
       this.player.setVelocityY(this.speed);
     }
-    
     // Update player position text
     this.debugText.setText(
       `Player pos: ${Math.round(this.player.x)}, ${Math.round(this.player.y)}`
@@ -129,14 +172,28 @@ export default class GymScene extends Phaser.Scene {
 
     // Create dialog background (white rectangle near bottom)
     this.dialogBg = this.add
-      .rectangle(sceneWidth / 2 + 10, sceneHeight + 75, sceneWidth, 150, 0xffffff, 1)
+      .rectangle(
+        sceneWidth / 2 + 10,
+        sceneHeight + 75,
+        sceneWidth,
+        150,
+        0xffffff,
+        1
+      )
       .setOrigin(0.5)
       .setScrollFactor(0)
       .setStrokeStyle(2, 0x000000, 1); // Black border
 
     // Add shadow for floating effect
     this.dialogShadow = this.add
-      .rectangle(sceneWidth / 2 + 15, sceneHeight + 80, sceneWidth, 150, 0x000000, 0.3)
+      .rectangle(
+        sceneWidth / 2 + 15,
+        sceneHeight + 80,
+        sceneWidth,
+        150,
+        0x000000,
+        0.3
+      )
       .setOrigin(0.5)
       .setScrollFactor(0);
 
@@ -183,7 +240,13 @@ export default class GymScene extends Phaser.Scene {
         color: "#ffffff",
         padding: { x: 20, y: 10 },
         align: "center",
-        shadow: { offsetX: 2, offsetY: 2, color: "#000000", blur: 4, fill: true },
+        shadow: {
+          offsetX: 2,
+          offsetY: 2,
+          color: "#000000",
+          blur: 4,
+          fill: true,
+        },
       })
       .setOrigin(0.5)
       .setScrollFactor(0)
@@ -197,8 +260,12 @@ export default class GymScene extends Phaser.Scene {
           this.startPokemonBattleTransition("grunt");
         }
       })
-      .on("pointerover", () => this.yesBtn.setStyle({ backgroundColor: "#218838" }))
-      .on("pointerout", () => this.yesBtn.setStyle({ backgroundColor: "#28a745" }));
+      .on("pointerover", () =>
+        this.yesBtn.setStyle({ backgroundColor: "#218838" })
+      )
+      .on("pointerout", () =>
+        this.yesBtn.setStyle({ backgroundColor: "#28a745" })
+      );
 
     // Add No button (red)
     this.noBtn = this.add
@@ -209,7 +276,13 @@ export default class GymScene extends Phaser.Scene {
         color: "#ffffff",
         padding: { x: 20, y: 10 },
         align: "center",
-        shadow: { offsetX: 2, offsetY: 2, color: "#000000", blur: 4, fill: true },
+        shadow: {
+          offsetX: 2,
+          offsetY: 2,
+          color: "#000000",
+          blur: 4,
+          fill: true,
+        },
       })
       .setOrigin(0.5)
       .setScrollFactor(0)
@@ -218,8 +291,12 @@ export default class GymScene extends Phaser.Scene {
       .on("pointerdown", () => {
         this.destroyDialog();
       })
-      .on("pointerover", () => this.noBtn.setStyle({ backgroundColor: "#c82333" }))
-      .on("pointerout", () => this.noBtn.setStyle({ backgroundColor: "#dc3545" }));
+      .on("pointerover", () =>
+        this.noBtn.setStyle({ backgroundColor: "#c82333" })
+      )
+      .on("pointerout", () =>
+        this.noBtn.setStyle({ backgroundColor: "#dc3545" })
+      );
 
     // Animate buttons fade-in
     this.tweens.add({
