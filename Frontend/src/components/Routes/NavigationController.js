@@ -27,6 +27,7 @@ export default class NavigationController{
         if(!success){
             console.log("No other Scene to Go to");
         }
+        // sceneManager.navigateToScene(this, "MainScene", this.player);
     }
 
     shutdown(){

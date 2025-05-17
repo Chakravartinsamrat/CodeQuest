@@ -147,7 +147,6 @@ export default class MainScene extends Phaser.Scene {
       this.debugText.setText(`Player pos: ${Math.round(this.player.x)}, ${Math.round(this.player.y)}`);
       
       // Check for interactions with glowing areas
-      this.checkInteractions();
     } catch (error) {
       console.error("Error in update:", error);
     }
@@ -175,6 +174,7 @@ export default class MainScene extends Phaser.Scene {
 
     if (this.isInArea(955, 875, 20, 10)) {
       this.scene.start("ChallengeScene", { playerX: 855, playerY: 1003 });
+      sceneManager.navigateToScene(this,"ChallengeScene");
     }
 
     if (this.isInArea(585, 665, 50, 10)) {
