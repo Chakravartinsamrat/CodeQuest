@@ -23,6 +23,15 @@ export default class GymScene extends Phaser.Scene {
   create() {
     const bg = this.add.image(80, 0, "Gym-Arena.webp").setOrigin(0);
     bg.setDisplaySize(1600, 1000); // match world and camera bounds exactly
+    const bg = this.add.image(80, 0, "Gym-Arena.webp").setOrigin(0);
+    bg.setDisplaySize(1600, 1000); // match world and camera bounds exactly
+
+    this.physics.world.setBounds(80, 0, 1600, 1000);
+    this.cameras.main.setBounds(80, 0, 1600, 1000);
+
+
+    //ABOUT TO CREATE OBSTACLES
+      this.createObstacles();
 
     this.physics.world.setBounds(80, 0, 1600, 1000);
     this.cameras.main.setBounds(80, 0, 1600, 1000);
@@ -40,7 +49,7 @@ export default class GymScene extends Phaser.Scene {
         "character",
         890,
         863,
-        5
+        6
       );
       this.player = this.playerController.getPlayer();
     } catch (error) {
@@ -56,6 +65,8 @@ export default class GymScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.player);
     this.cursors = this.input.keyboard.createCursorKeys();
     this.speed = 300;
+        this.physics.add.collider(this.player, this.obstacles);
+
         this.physics.add.collider(this.player, this.obstacles);
 
 
@@ -141,10 +152,7 @@ export default class GymScene extends Phaser.Scene {
     this.obstacles = this.physics.add.staticGroup();
 
 
-    this.createObstacleRect(225, 165,90,140);
-    this.createObstacleRect(755, 30,250,140);
-    this.createObstacleRect(1410, 165,90,140);
-    
+    // this.createObstacleRect(275, 417,10,110);
   
   }
   createObstacleRect(x, y, width, height) {

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { LearningData, Codechatbot } from './components/Ai/Generate/Learning';
 
 // Dummy AI response function (replace with real API if needed)
 const getAIResponse = (question) => {
@@ -15,8 +16,6 @@ const saveNotesToDB = async (notes) => {
 };
 
 const exportNotesToPDF = (notes, title = "My Learning Notes") => {
-  // This is a simple implementation - in a real app, you'd use a library like jsPDF
-  // or send to a server endpoint that generates a proper PDF
   const element = document.createElement('a');
   const file = new Blob([`# ${title}\n\n${notes}`], {type: 'text/plain'});
   element.href = URL.createObjectURL(file);
@@ -24,19 +23,6 @@ const exportNotesToPDF = (notes, title = "My Learning Notes") => {
   document.body.appendChild(element);
   element.click();
   document.body.removeChild(element);
-};
-
-const sampleLesson = {
-  videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ", // Replace with your video
-  keyPoints: [
-    "Key Point 1: Learning is a continuous journey.",
-    "Key Point 2: Asking questions helps deepen understanding.",
-    "Key Point 3: Making notes improves retention.",
-  ],
-  funFacts: [
-    "Did you know? The brain can process images in as little as 13 milliseconds!",
-    "Fun Fact: Taking short notes boosts memory by 30%.",
-  ],
 };
 
 export default function LearningScene({ onClose }) {
@@ -49,19 +35,96 @@ export default function LearningScene({ onClose }) {
   const [notesTitle, setNotesTitle] = useState('Lesson Notes');
   const [saveStatus, setSaveStatus] = useState(''); // For save confirmation
   const [showNotes, setShowNotes] = useState(false);
+  const [lessonData, setLessonData] = useState({
+    Title: '',
+    videoUrl: '',
+    keyPoints: [],
+    funFacts: []
+  });
+  const [isLoading, setIsLoading] = useState(true);
 
   // Add new message to conversation
   const addMessage = (speaker, text) => {
     setConversation(prev => [...prev, { speaker, text }]);
   };
 
+  useEffect(() => {
+    // Cleanup function flag to prevent state updates after unmount
+    let isMounted = true;
+    setIsLoading(true);
+    
+    // Fetch lesson data from API or database
+    const fetchLessonData = async () => {
+      try {
+        // Get topic from window.gameId if available, or use a default topic
+        const topic = typeof window !== 'undefined' && window.gameId ? window.gameId : "Arrays Intro";
+        
+        // Use "medium" difficulty level by default
+        const rawResponse = await LearningData(topic, "medium");
+        console.log("Fetched lesson data:", rawResponse);
+        
+        // Check if the response is a string containing JSON
+        let rawData;
+        if (typeof rawResponse === 'string' && rawResponse.includes('{')) {
+          // Try to extract JSON from string (handles case with backticks and formatting)
+          const jsonMatch = rawResponse.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            try {
+              rawData = JSON.parse(jsonMatch[0]);
+            } catch (parseError) {
+              console.error("Error parsing JSON from string:", parseError);
+              // Fallback to empty object
+              rawData = {};
+            }
+          } else {
+            rawData = {};
+          }
+        } else {
+          // If it's already an object, use it directly
+          rawData = rawResponse;
+        }
+        
+        console.log("Parsed data:", rawData);
+
+        // Format the data for our component
+        const formattedData = {
+          Title: rawData.Title || "Lesson",
+          videoUrl: rawData.Video_Link?.replace("watch?v=", "embed/") || "",
+          keyPoints: rawData.Key_Points || [],
+          funFacts: rawData.Fun_Facts || []
+        };
+
+        if (isMounted) {
+          setLessonData(formattedData);
+          setNotesTitle(`${formattedData.Title} Notes`); // Set notes title based on lesson title
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error("Error fetching lesson data:", error);
+        if (isMounted) {
+          // Even on error, stop the loading state
+          setIsLoading(false);
+        }
+      }
+    };
+    
+    fetchLessonData();
+    
+    // Cleanup function to prevent state updates after unmount
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   // Handle user doubt submission
-  const handleSubmit = () => {
+  const handleSubmit =async () => {
     if (!userInput.trim()) return;
     addMessage('user', userInput);
-    setTimeout(() => {
-      addMessage('ai', getAIResponse(userInput));
-    }, 600);
+    // setTimeout(() => {
+    //   addMessage('ai', getAIResponse(userInput));
+    // }, 600);
+    const repsonse = await Codechatbot(userInput);
+    addMessage('ai', repsonse);
     setUserInput('');
   };
 
@@ -91,7 +154,7 @@ export default function LearningScene({ onClose }) {
       <div className="bg-gray-900 border-2 border-blue-500 rounded-lg w-full max-w-5xl flex flex-col overflow-hidden shadow-xl max-h-[90vh]">
         {/* Header */}
         <div className="bg-blue-900 text-white p-4 font-bold text-xl flex justify-between items-center">
-          <span>Learning Scene</span>
+          <span>{isLoading ? "Loading Lesson..." : lessonData.Title}</span>
           <div className="flex space-x-4 items-center">
             <button 
               onClick={() => setShowNotes(!showNotes)} 
@@ -115,29 +178,58 @@ export default function LearningScene({ onClose }) {
           <div className="w-1/2 p-4 bg-gray-800 flex flex-col text-gray-100">
             <h2 className="text-lg font-bold mb-3 text-blue-300">Lesson Video</h2>
             <div className="mb-5">
-              <iframe
-                width="100%"
-                height="220"
-                src={sampleLesson.videoUrl}
-                title="Lesson Video"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                className="rounded-lg shadow-lg"
-              ></iframe>
+              {isLoading ? (
+                <div className="h-[220px] w-full flex items-center justify-center bg-gray-900 rounded-lg">
+                  <div className="animate-pulse text-blue-300">Loading lesson video...</div>
+                </div>
+              ) : lessonData.videoUrl ? (
+                <iframe
+                  width="100%"
+                  height="220"
+                  src={lessonData.videoUrl}
+                  title={`${lessonData.Title} Video`}
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="rounded-lg shadow-lg"
+                ></iframe>
+              ) : (
+                <div className="h-[220px] w-full flex items-center justify-center bg-gray-900 rounded-lg">
+                  <div className="text-gray-400">No video available</div>
+                </div>
+              )}
             </div>
             <h3 className="font-bold mb-2 text-blue-300">Key Points</h3>
-            <ul className="list-disc ml-6 mb-4 space-y-2">
-              {sampleLesson.keyPoints.map((point, idx) => (
-                <li key={idx} className="mb-1">{point}</li>
-              ))}
-            </ul>
+            {isLoading ? (
+              <div className="animate-pulse space-y-2 ml-6">
+                <div className="h-4 bg-gray-700 rounded w-3/4"></div>
+                <div className="h-4 bg-gray-700 rounded w-5/6"></div>
+                <div className="h-4 bg-gray-700 rounded w-2/3"></div>
+              </div>
+            ) : lessonData.keyPoints.length > 0 ? (
+              <ul className="list-disc ml-6 mb-4 space-y-2">
+                {lessonData.keyPoints.map((point, idx) => (
+                  <li key={idx} className="mb-1">{point}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="ml-6 text-gray-400">No key points available</p>
+            )}
             <h3 className="font-bold mb-2 text-blue-300">Fun Facts</h3>
-            <ul className="list-disc ml-6 mb-4 space-y-2 text-blue-200">
-              {sampleLesson.funFacts.map((fact, idx) => (
-                <li key={idx} className="mb-1">{fact}</li>
-              ))}
-            </ul>
+            {isLoading ? (
+              <div className="animate-pulse space-y-2 ml-6">
+                <div className="h-4 bg-gray-700 rounded w-4/5"></div>
+                <div className="h-4 bg-gray-700 rounded w-3/4"></div>
+              </div>
+            ) : lessonData.funFacts.length > 0 ? (
+              <ul className="list-disc ml-6 mb-4 space-y-2 text-blue-200">
+                {lessonData.funFacts.map((fact, idx) => (
+                  <li key={idx} className="mb-1">{fact}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="ml-6 text-gray-400">No fun facts available</p>
+            )}
           </div>
 
           {/* Right: Doubts & Notes */}

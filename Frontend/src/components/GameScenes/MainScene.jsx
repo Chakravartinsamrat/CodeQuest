@@ -82,7 +82,7 @@ export default class MainScene extends Phaser.Scene {
 
     // Camera follows player
     this.cameras.main.startFollow(this.player);
-        this.cameras.main.setZoom(1.1)
+        this.cameras.main.setZoom(1.5)
 
 
     // Controls
