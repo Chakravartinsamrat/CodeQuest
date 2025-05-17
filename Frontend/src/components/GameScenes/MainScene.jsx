@@ -64,6 +64,18 @@ export default class MainScene extends Phaser.Scene {
       yoyo: true,
       repeat: -1,
     });
+    this.glowArea = this.add.rectangle(650, 850, 60, 40, 0x00ff00, 0.4)
+      .setOrigin(0)
+      .setStrokeStyle(2, 0x00ff00, 1);
+
+    // Optionally, make it pulse using tween
+    this.tweens.add({
+      targets: this.glowArea,
+      alpha: { from: 0.2, to: 0.8 },
+      duration: 800,
+      yoyo: true,
+      repeat: -1,
+    });
 this.navController = new NavigationController(this);
 
 // Create a glowing area using a semi-transparent green rectangle
@@ -116,6 +128,14 @@ this.input.keyboard.on('keydown-P', (event) => {
     ) {
       sceneManager.navigateToScene(this, "KnowledgeScene");
     }
+    // if (
+    //   this.player.x > 680 &&
+    //   this.player.x < 740 &&  // 630 + 60
+    //   this.player.y > 920 &&
+    //   this.player.y < 960     // 870 + 40
+    // ) {
+    //   sceneManager.navigateToScene(this, "TournamentScene");
+    // }
   if (
     this.player.x >= 955 &&
     this.player.x <= 975 && // 955 + 20 (rectangle width)
