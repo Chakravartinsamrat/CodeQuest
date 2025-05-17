@@ -82,7 +82,7 @@ export default class MainScene extends Phaser.Scene {
 
     // Camera follows player
     this.cameras.main.startFollow(this.player);
-        this.cameras.main.setZoom(1.5)
+        this.cameras.main.setZoom(1.1)
 
 
     // Controls
@@ -104,6 +104,7 @@ export default class MainScene extends Phaser.Scene {
     this.createGlowArea(955, 875, 20, 10, 0x0000ff);
     this.createGlowArea(585, 665, 50, 10, 0x0000ff);
     this.createGlowArea(1150, 879, 20, 10, 0x0000ff);
+    this.createGlowArea(335,484, 50, 20, 0x00ff00);
 
     this.navController = new NavigationController(this);
 
@@ -193,6 +194,13 @@ export default class MainScene extends Phaser.Scene {
     if (this.isInArea(630, 870, 60, 40)) {
       sceneManager.navigateToScene(this, "KnowledgeScene");
     }
+    
+
+    //setting up arcade Game Library
+    if(this.isInArea(365,484,50, 20)){
+      sceneManager.navigateToScene(this, "ArcadeHome");
+    }
+
 
     if (this.isInArea(955, 875, 20, 10)) {
       this.scene.start("ChallengeScene", { playerX: 855, playerY: 1003 });
