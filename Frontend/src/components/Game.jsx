@@ -5,6 +5,7 @@ import KnowledgeScene from './GameScenes/KnowledgeScne.jsx';
 import ContentScene from './GameScenes/ContentScene.jsx';
 import ChallengeScene from './GameScenes/ChallengeScene.jsx';
 import MenuScene from './GameScenes/menuScene.jsx';
+import TournamentScene from './GameScenes/TournamentScene.jsx';
 
 const Game = ({ w, h, isFullscreen }) => {
   const gameRef = useRef(null);
@@ -16,7 +17,7 @@ const Game = ({ w, h, isFullscreen }) => {
       width: w,
       height: h,
       parent: gameRef.current,
-      scene: [MainScene, KnowledgeScene, ContentScene, ChallengeScene, MenuScene],
+      scene: [MainScene, KnowledgeScene, ContentScene, ChallengeScene, MenuScene, TournamentScene],
       physics: {
         default: 'arcade',
         arcade: {
