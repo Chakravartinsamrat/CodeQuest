@@ -11,7 +11,8 @@ import { ClerkProvider, PUBLISHABLE_KEY } from './config/clerkConfig.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <ClerkProvider publishableKey={PUBLISHABLE_KEY} afterSignOutUrl="/">
+    <ClerkProvider publishableKey={PUBLISHABLE_KEY} afterSignOutUrl="/" CLERK_SIGN_IN_FORCE_REDIRECT_URL="/check-profile"
+  CLERK_SIGN_UP_FORCE_REDIRECT_URL="/check-profile">
       <App />
     </ClerkProvider>
   </StrictMode>
