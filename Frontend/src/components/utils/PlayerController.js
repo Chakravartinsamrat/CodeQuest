@@ -85,7 +85,7 @@ export default class PlayerController {
         scene.anims.create({
           key: idleKey,
           frames: [{ key: this.spriteKey, frame: startFrame }],
-          frameRate: 1
+          frameRate: 2
         });
         console.log(`Created animation: ${idleKey}, frame ${startFrame}`);
       }

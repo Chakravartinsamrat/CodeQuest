@@ -21,11 +21,11 @@ export default class GymScene extends Phaser.Scene {
   }
 
   create() {
-    const bg = this.add.image(0, 0, "Gym-Arena.webp").setOrigin(0);
-    bg.setDisplaySize(1000, 600); // match world and camera bounds exactly
+    const bg = this.add.image(200, 0, "Gym-Arena.webp").setOrigin(0);
+    bg.setDisplaySize(1600, 1000); // match world and camera bounds exactly
 
-    this.physics.world.setBounds(0, 0, 1000, 600);
-    this.cameras.main.setBounds(0, 0, 1000, 300);
+    this.physics.world.setBounds(200, 0, 1600, 1000);
+    this.cameras.main.setBounds(0, 0, 1600, 1000);
 
     // Add player
     // this.player = this.physics.add.sprite(500, 408, "player").setScale(0.02);
@@ -35,7 +35,7 @@ export default class GymScene extends Phaser.Scene {
         "character",
         675,
         950,
-        4
+        5
       );
       this.player = this.playerController.getPlayer();
     } catch (error) {
