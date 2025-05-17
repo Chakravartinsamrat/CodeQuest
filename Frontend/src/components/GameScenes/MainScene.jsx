@@ -47,6 +47,11 @@ export default class MainScene extends Phaser.Scene {
       this.fallbackToOriginalPlayer();
     }
     
+
+
+    
+    this.player.setCollideWorldBounds(true);
+
     // Create obstacles
     this.obstacleManager = new ObstacleManager(this);
     this.obstacleManager.createAllObstacles();
@@ -55,6 +60,8 @@ export default class MainScene extends Phaser.Scene {
 
     // Camera follows player
     this.cameras.main.startFollow(this.player);
+        this.cameras.main.setZoom(1.5)
+
 
     // Controls
     this.cursors = this.input.keyboard.createCursorKeys();
