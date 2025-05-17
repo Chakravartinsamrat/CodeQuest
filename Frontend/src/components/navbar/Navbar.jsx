@@ -1,5 +1,7 @@
 // src/components/Navbar.jsx
 import { Link } from 'react-router-dom';
+import AuthButton from './icon';
+
 
 export default function Navbar() {
   return (
@@ -18,11 +20,7 @@ export default function Navbar() {
       </div>
 
       {/* Right - Signup */}
-      <div className="flex items-center space-x-4">
-        <Link href='http://localhost:3000/login' className="bg-yellow-600 hover:bg-yellow-500 text-white px-4 py-1.5 rounded shadow">
-          Sign up
-        </Link>
-      </div>
+      <AuthButton/>
     </nav>
   );
 }

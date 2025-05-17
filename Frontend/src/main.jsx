@@ -7,11 +7,14 @@ import LearningScene from './LearningInterface.jsx';
 import GymInterface from './GymInterface.jsx';
 import GruntInterface from './GruntInterface';
 import TournamentScene from './TournamentInterface.jsx';
+import { ClerkProvider, PUBLISHABLE_KEY } from './config/clerkConfig.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App />
-  </StrictMode>,
+    <ClerkProvider publishableKey={PUBLISHABLE_KEY} afterSignOutUrl="/">
+      <App />
+    </ClerkProvider>
+  </StrictMode>
 );
 
 const challengeRoot = document.createElement('div');
