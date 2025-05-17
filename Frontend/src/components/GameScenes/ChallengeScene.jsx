@@ -31,7 +31,6 @@ export default class ChallengeScene extends Phaser.Scene {
     this.createObstacles();
 
       //add collision
-      this.physics.add.collider(this.player, this.obstacles);
 
 
     // Add player
@@ -64,6 +63,8 @@ export default class ChallengeScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.player);
     this.cursors = this.input.keyboard.createCursorKeys();
     this.speed = 300;
+          this.physics.add.collider(this.player, this.obstacles);
+
 
     this.debugText = this.add
       .text(10, 10, "Use arrow keys to move", {

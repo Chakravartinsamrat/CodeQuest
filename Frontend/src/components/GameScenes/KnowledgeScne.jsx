@@ -67,7 +67,7 @@ export default class KnowledgeScene extends Phaser.Scene {
       this.createObstacles();
 
       //add collision
-      this.physics.add.collider(this.player, this.obstacles);
+      
 
     // Add player
     // this.player = this.physics.add.sprite(745, 1169, "player").setScale(0.02);
@@ -92,7 +92,7 @@ export default class KnowledgeScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.player);
     this.cursors = this.input.keyboard.createCursorKeys();
     this.speed = 300;
-
+this.physics.add.collider(this.player, this.obstacles);
     this.debugText = this.add
       .text(10, 10, "Use arrow keys to move", {
         fontSize: "16px",
@@ -212,8 +212,17 @@ export default class KnowledgeScene extends Phaser.Scene {
     this.obstacles = this.physics.add.staticGroup();
 
 
-    this.createObstacleRect(275, 417,10,110);
-  
+    this.createObstacleRect(275, 417,10,150);
+    this.createObstacleRect(10, 417,10,150);
+
+    this.createObstacleRect(423, 167, 40, 40);
+    this.createObstacleRect(1123, 167, 40, 40);
+    this.createObstacleRect(715, 202, 170, 20);
+    this.createObstacleRect(108,761, 290, 48);
+    this.createObstacleRect(1326, 421, 140, 90);
+    this.createObstacleRect(1217, 761,290, 48);
+    this.createObstacleRect(1220, 997, 340, 70);
+    this.createObstacleRect(10, 997, 340, 70)
   }
 
   checkGlowAreaInteraction() {

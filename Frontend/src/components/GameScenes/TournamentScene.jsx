@@ -31,10 +31,6 @@ export default class GymScene extends Phaser.Scene {
     //ABOUT TO CREATE OBSTACLES
       this.createObstacles();
 
-      //add collision
-      this.physics.add.collider(this.player, this.obstacles);
-
-      
 
     // Add player
     // this.player = this.physics.add.sprite(500, 408, "player").setScale(0.02);
@@ -60,6 +56,8 @@ export default class GymScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.player);
     this.cursors = this.input.keyboard.createCursorKeys();
     this.speed = 300;
+        this.physics.add.collider(this.player, this.obstacles);
+
 
     this.debugText = this.add
       .text(10, 10, "Use arrow keys to move", {
