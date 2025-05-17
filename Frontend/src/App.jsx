@@ -6,8 +6,8 @@ import Home from "./pages/Home/Home";
 
 function App() {
   const gameContainerRef = useRef(null);
-  const [w, setW] = useState(window.innerWidth);
-  const [h, setH] = useState(window.innerHeight);
+  const [w, setW] = useState(1200);
+  const [h, setH] = useState(800);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Add event listener for fullscreen changes
@@ -59,12 +59,12 @@ function App() {
               path="/game"
               element={
                 <div>
-                  {/* <button
+                  <button
                     onClick={toggleFullScreen}
                     className="fullscreen-button"
                   >
                     {isFullscreen ? "Exit Full Screen" : "Full Screen"}
-                  </button> */}
+                  </button>
                   <div ref={gameContainerRef} className="game-container">
                     <Game w={w} h={h} isFullscreen={isFullscreen} />
                   </div>

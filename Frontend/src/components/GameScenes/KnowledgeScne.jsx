@@ -3,6 +3,27 @@ import PlayerController from "../utils/PlayerController";
 export default class KnowledgeScene extends Phaser.Scene {
   constructor() {
     super("KnowledgeScene");
+    
+    // Define the knowledge areas data
+    this.knowledgeAreas = [
+      { x: 625, y: 1073, topic: "math", subtopic: "algebra", hardness: "easy" },
+      { x: 300, y: 950, topic: "physics", subtopic: "mechanics", hardness: "medium" },
+      { x: 900, y: 900, topic: "biology", subtopic: "genetics", hardness: "hard" },
+      { x: 500, y: 750, topic: "chemistry", subtopic: "elements", hardness: "medium" },
+      { x: 1100, y: 700, topic: "geography", subtopic: "countries", hardness: "easy" },
+      { x: 800, y: 500, topic: "history", subtopic: "world wars", hardness: "hard" },
+      { x: 400, y: 400, topic: "literature", subtopic: "classics", hardness: "medium" },
+      { x: 1200, y: 300, topic: "programming", subtopic: "algorithms", hardness: "hard" },
+      { x: 600, y: 200, topic: "art", subtopic: "renaissance", hardness: "medium" },
+      { x: 1000, y: 100, topic: "astronomy", subtopic: "planets", hardness: "easy" }
+    ];
+    
+    // Color mapping for hardness levels
+    this.hardnessColors = {
+      "easy": 0x00ff00,    // Green
+      "medium": 0xffff00,  // Yellow
+      "hard": 0xff0000     // Red
+    };
   }
 
   preload() {
@@ -58,16 +79,46 @@ export default class KnowledgeScene extends Phaser.Scene {
       })
       .setScrollFactor(0);
 
-    this.glowArea = this.add
-      .rectangle(625, 1073, 20, 20, 0x00ff00, 0.4)
-      .setOrigin(0)
-      .setStrokeStyle(2, 0x00ff00, 1);
-    this.tweens.add({
-      targets: this.glowArea,
-      alpha: { from: 0.2, to: 0.8 },
-      duration: 800,
-      yoyo: true,
-      repeat: -1,
+    // Create all glow areas
+    this.glowAreas = [];
+    this.areaTexts = [];
+    
+    this.knowledgeAreas.forEach((area, index) => {
+      // Create the glow area
+      const glowColor = this.hardnessColors[area.hardness];
+      const glowArea = this.add
+        .rectangle(area.x, area.y, 40, 40, glowColor, 0.4)
+        .setOrigin(0.5)
+        .setStrokeStyle(2, glowColor, 1);
+      
+      // Add pulsing animation
+      this.tweens.add({
+        targets: glowArea,
+        alpha: { from: 0.2, to: 0.8 },
+        duration: 800,
+        yoyo: true,
+        repeat: -1,
+      });
+      
+      // Add text label above the glow area
+      const areaText = this.add
+        .text(area.x, area.y - 30, 
+          `${area.topic.toUpperCase()}\n${area.hardness}`, {
+          fontSize: "12px",
+          fontFamily: "Arial, sans-serif",
+          color: "#ffffff",
+          backgroundColor: "#000000",
+          padding: { x: 4, y: 2 },
+          align: "center",
+        })
+        .setOrigin(0.5);
+      
+      // Store references
+      this.glowAreas.push({
+        rect: glowArea,
+        data: area
+      });
+      this.areaTexts.push(areaText);
     });
 
     this.player.setInteractive();
@@ -76,6 +127,26 @@ export default class KnowledgeScene extends Phaser.Scene {
     );
 
     this.navController = new NavigationController(this);
+    
+    // Add info text
+    this.infoText = this.add
+      .text(this.cameras.main.width / 2, 50, "Find knowledge areas and press SPACE to challenge!", {
+        fontSize: "18px",
+        fontFamily: "Arial, sans-serif",
+        backgroundColor: "#000000",
+        color: "#ffffff",
+        padding: { x: 10, y: 5 },
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0);
+    
+    // Fade out the info text after a few seconds
+    this.tweens.add({
+      targets: this.infoText,
+      alpha: 0,
+      delay: 5000,
+      duration: 1000
+    });
   }
 
   update() {
@@ -110,72 +181,63 @@ export default class KnowledgeScene extends Phaser.Scene {
       this.player.setVelocityY(this.speed);
     }
 
-    // Check for spacebar press and overlap with glowArea
-    if (
-      Phaser.Input.Keyboard.JustDown(this.spacebar) &&
-      Phaser.Geom.Rectangle.Overlaps(
-        this.glowArea.getBounds(),
+    // Check for spacebar press and overlap with any glow area
+    if (Phaser.Input.Keyboard.JustDown(this.spacebar)) {
+      this.checkGlowAreaInteraction();
+    }
+  }
+  
+  checkGlowAreaInteraction() {
+    for (let i = 0; i < this.glowAreas.length; i++) {
+      const area = this.glowAreas[i];
+      if (Phaser.Geom.Rectangle.Overlaps(
+        area.rect.getBounds(),
         this.player.getBounds()
-      )
-    ) {
-      this.showChallengeDialog();
+      )) {
+        this.showChallengeDialog(area.data);
+        break;
+      }
     }
   }
 
-  showChallengeDialog() {
+  showChallengeDialog(areaData) {
     // Get scene dimensions
     const sceneWidth = this.cameras.main.width - 40;
-    const sceneHeight = this.cameras.main.height - 10; // Position 10px from bottom
+    const sceneHeight = this.cameras.main.height - 10;
 
-    // Create dialog background (white rectangle near bottom)
+    // Create dialog background
     this.dialogBg = this.add
-      .rectangle(
-        sceneWidth / 2 + 10,
-        sceneHeight + 75,
-        sceneWidth,
-        150,
-        0xffffff,
-        1
-      )
+      .rectangle(sceneWidth / 2 + 10, sceneHeight + 75, sceneWidth, 180, 0xffffff, 1)
       .setOrigin(0.5)
       .setScrollFactor(0)
-      .setStrokeStyle(2, 0x000000, 1); // Black border
+      .setStrokeStyle(2, 0x000000, 1);
 
     // Add shadow for floating effect
     this.dialogShadow = this.add
-      .rectangle(
-        sceneWidth / 2 + 15,
-        sceneHeight + 80,
-        sceneWidth,
-        150,
-        0x000000,
-        0.3
-      )
+      .rectangle(sceneWidth / 2 + 15, sceneHeight + 80, sceneWidth, 180, 0x000000, 0.3)
       .setOrigin(0.5)
       .setScrollFactor(0);
 
     // Move dialog and shadow to final position with animation
     this.tweens.add({
       targets: [this.dialogBg, this.dialogShadow],
-      y: sceneHeight - 75, // Adjusted to be 10px from bottom
+      y: sceneHeight - 75,
       duration: 300,
       ease: "Power2",
     });
 
-    // Add dialog text (black, centered)
+    // Format the challenge text
+    const challengeText = `Challenge: ${areaData.topic.toUpperCase()} - ${areaData.subtopic} Difficulty: ${areaData.hardness.toUpperCase()}\n\nDo you want to accept this challenge?`;
+
+    // Add dialog text
     this.dialogText = this.add
-      .text(
-        sceneWidth / 2 + 10,
-        sceneHeight - 125,
-        "Do you want to challenge me?",
-        {
-          fontSize: "24px",
-          fontFamily: "Arial, sans-serif",
-          color: "#000000",
-          align: "center",
-          wordWrap: { width: sceneWidth - 200 }, // Adjust for padding
-        }
-      )
+      .text(sceneWidth / 2 + 10, sceneHeight - 125, challengeText, {
+        fontSize: "24px",
+        fontFamily: "Arial, sans-serif",
+        color: "#000000",
+        align: "center",
+        wordWrap: { width: sceneWidth - 200 },
+      })
       .setOrigin(0.5)
       .setScrollFactor(0)
       .setAlpha(0);
@@ -210,12 +272,8 @@ export default class KnowledgeScene extends Phaser.Scene {
       .setInteractive({ useHandCursor: true })
       .setAlpha(0)
       .on("pointerdown", () => {
-        this.destroyDialog();
-        this.showLearningDialog();
-        // this.scene.start("ContentScene", {
-        //     challengeAccepted: true,
-        //     playerPos: { x: this.player.x, y: this.player.y }
-        // });
+        this.destroyDialog(); 
+        this.showLearningDialog(areaData);
       })
       .on("pointerover", () =>
         this.yesBtn.setStyle({ backgroundColor: "#218838" })
@@ -273,14 +331,16 @@ export default class KnowledgeScene extends Phaser.Scene {
     if (this.noBtn) this.noBtn.destroy();
   }
 
-  showLearningDialog() {
+  showLearningDialog(areaData) {
     const playerPos = { x: this.player.x, y: this.player.y };
+    // Store both player position and challenge data
     this.game.registry.set("playerPos", playerPos);
-    if (window.showChallengeInterface) {
-      window.showLearningInterface();
-      // this.scene.pause();
+    this.game.registry.set("challengeData", areaData);
+    
+    if (window.showLearningInterface) {
+      window.showLearningInterface(areaData);
     } else {
-      console.error("React Challengeinterface.jsx not available");
+      console.error("React Learning Interface not available");
     }
   }
 }
