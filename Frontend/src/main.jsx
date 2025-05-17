@@ -35,10 +35,10 @@ window.showChallengeInterface = () => {
     />
   );
 };
-window.showLearningInterface = () => {
+window.showLearningInterface = ({topic, level}) => {
   const challengeReactRoot = createRoot(challengeRoot);
   challengeReactRoot.render(
-    <LearningScene
+    <LearningScene topic={topic} level={level}
       onClose={() => {
         challengeReactRoot.unmount();
         const game = window.game;
