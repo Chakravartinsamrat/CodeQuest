@@ -1,7 +1,7 @@
 import ObstacleManager from "../utils/ObstracleManager";
 import NavigationController from "../Routes/NavigationController";
 import sceneManager from "../utils/SceneManager";
-
+import PlayerController from "../utils/PlayerController.js";
 
 
 export default class MainScene extends Phaser.Scene {
@@ -10,6 +10,17 @@ export default class MainScene extends Phaser.Scene {
   }
 
   preload() {
+    // Load your character sprite sheet with fixed dimensions
+    this.load.spritesheet('character', 
+      // Use your actual sprite sheet path here
+      '/PlayerMovement.png',  
+      { 
+        frameWidth: 16,   // Make sure these match your sprite sheet's actual dimensions
+        frameHeight: 24   // Make sure these match your sprite sheet's actual dimensions
+      }
+    );
+    
+    // Keep your original assets as well
     this.load.image("player", "/BOSS.png");
     this.load.image("background", "/Volt-Town.webp");
   }
@@ -23,10 +34,15 @@ export default class MainScene extends Phaser.Scene {
     this.physics.world.setBounds(0, 0, 1600, 1200);
     this.cameras.main.setBounds(0, 0, 1600, 1200);
     
-    // Create player with physics
-    this.player = this.physics.add.sprite(675, 950, "player").setScale(0.01);
-
-    this.player.setCollideWorldBounds(true);
+    // OPTION 1: Use the PlayerController with your character sprite sheet
+    try {
+      this.playerController = new PlayerController(this, 'character', 675, 950, 2);
+      this.player = this.playerController.getPlayer();
+    } catch (error) {
+      console.error("Error creating PlayerController, falling back to original player:", error);
+      // OPTION 2: Fall back to original player if sprite sheet doesn't work
+      this.fallbackToOriginalPlayer();
+    }
     
     // Create obstacles
     this.obstacleManager = new ObstacleManager(this);
@@ -39,10 +55,6 @@ export default class MainScene extends Phaser.Scene {
     // Setup camera to follow player
     this.cameras.main.startFollow(this.player);
 
-    // Setup controls
-    this.cursors = this.input.keyboard.createCursorKeys();
-    this.speed = 300;
-    
     // Debug text to confirm update is running
     this.debugText = this.add.text(10, 10, "Use arrow keys to move", {
       fontSize: '16px',
@@ -50,38 +62,61 @@ export default class MainScene extends Phaser.Scene {
       backgroundColor: '#000000'
     }).setScrollFactor(0);
 
+    // Create interaction areas
+    this.createInteractionAreas();
+    
+    // Setup navigation controller
+    this.navController = new NavigationController(this);
 
-    // Create a glowing area using a semi-transparent green rectangle
-    this.glowArea = this.add.rectangle(630, 870, 60, 40, 0x00ff00, 0.4)
+    // Menu shortcut
+    this.input.keyboard.on('keydown-P', (event) => {
+      if (event.shiftKey) {
+        // Launch the menu scene as an overlay
+        this.scene.launch('MenuScene');
+      }
+    });
+  }
+
+  // Fallback to original player implementation if needed
+  fallbackToOriginalPlayer() {
+    this.player = this.physics.add.sprite(675, 950, "player").setScale(0.01);
+    this.player.setCollideWorldBounds(true);
+    this.cursors = this.input.keyboard.createCursorKeys();
+    this.speed = 300;
+    this.usingPlayerController = false;
+  }
+
+  createInteractionAreas() {
+    // Knowledge Area
+    this.knowledgeArea = this.add.rectangle(630, 870, 60, 40, 0x00ff00, 0.4)
       .setOrigin(0)
       .setStrokeStyle(2, 0x00ff00, 1);
 
-    // Optionally, make it pulse using tween
     this.tweens.add({
-      targets: this.glowArea,
+      targets: this.knowledgeArea,
       alpha: { from: 0.2, to: 0.8 },
       duration: 800,
       yoyo: true,
       repeat: -1,
     });
-    this.glowArea = this.add.rectangle(650, 850, 60, 40, 0x00ff00, 0.4)
+
+    // Challenge Area 1
+    this.challengeGlowScene1 = this.add.rectangle(955, 875, 20, 10, 0x0000FF, 0.4)
       .setOrigin(0)
       .setStrokeStyle(2, 0x00ff00, 1);
 
-    // Optionally, make it pulse using tween
     this.tweens.add({
-      targets: this.glowArea,
+      targets: this.challengeGlowScene1,
       alpha: { from: 0.2, to: 0.8 },
       duration: 800,
       yoyo: true,
       repeat: -1,
     });
-this.navController = new NavigationController(this);
 
-// Create a glowing area using a semi-transparent green rectangle
-this.challengeGlowScene = this.add.rectangle(955, 875, 20, 10, 0x0000FF, 0.4)
-  .setOrigin(0)
-  .setStrokeStyle(2, 0x00ff00, 1);
+    // Gym Area
+    this.gymArea = this.add.rectangle(585, 665, 50, 10, 0x0000FF, 0.4)
+      .setOrigin(0)
+      .setStrokeStyle(2, 0x00ff00, 1);
 
 // Optionally, make it pulse using tween
 this.tweens.add({
@@ -101,9 +136,27 @@ this.input.keyboard.on('keydown-P', (event) => {
   }
 
   update() {
-    // Update debug text
-    this.debugText.setText(`Player pos: ${Math.round(this.player.x)}, ${Math.round(this.player.y)}`);
-    
+    try {
+      if (this.playerController) {
+        // Update player movement and animations through the controller
+        const playerStatus = this.playerController.update();
+      } else {
+        // Original movement code from your MainScene
+        this.updateOriginalPlayer();
+      }
+      
+      // Update debug text
+      this.debugText.setText(`Player pos: ${Math.round(this.player.x)}, ${Math.round(this.player.y)}`);
+      
+      // Check for interactions with glowing areas
+      this.checkInteractions();
+    } catch (error) {
+      console.error("Error in update:", error);
+    }
+  }
+
+  // Original player movement logic
+  updateOriginalPlayer() {
     // Reset velocity
     this.player.setVelocity(0);
 
@@ -119,33 +172,38 @@ this.input.keyboard.on('keydown-P', (event) => {
     } else if (this.cursors.down.isDown) {
       this.player.setVelocityY(this.speed);
     }
+  }
 
+  checkInteractions() {
+    // Knowledge Area
     if (
       this.player.x > 630 &&
-      this.player.x < 690 &&  // 630 + 60
+      this.player.x < 690 &&
       this.player.y > 870 &&
-      this.player.y < 910     // 870 + 40
+      this.player.y < 910
     ) {
       sceneManager.navigateToScene(this, "KnowledgeScene");
     }
-    // if (
-    //   this.player.x > 680 &&
-    //   this.player.x < 740 &&  // 630 + 60
-    //   this.player.y > 920 &&
-    //   this.player.y < 960     // 870 + 40
-    // ) {
-    //   sceneManager.navigateToScene(this, "TournamentScene");
-    // }
-  if (
-    this.player.x >= 955 &&
-    this.player.x <= 975 && // 955 + 20 (rectangle width)
-    this.player.y >= 875 &&
-    this.player.y <= 885    // 875 + 10 (rectangle height)
-  ) {
-    // Start ChallengeScene and pass player position
-    this.scene.start("ChallengeScene", { playerX: 855, playerY: 1003 });
-  }
 
+    // Challenge Area
+    if (
+      this.player.x >= 955 &&
+      this.player.x <= 975 &&
+      this.player.y >= 875 &&
+      this.player.y <= 885
+    ) {
+      // Start ChallengeScene and pass player position
+      this.scene.start("ChallengeScene", { playerX: 855, playerY: 1003 });
+    }
 
+    // Gym Area
+    if (
+      this.player.x >= 585 &&
+      this.player.x <= 635 &&
+      this.player.y >= 665 &&
+      this.player.y <= 675
+    ) {
+      sceneManager.navigateToScene(this, "GymScene");
+    }
   }
 }
