@@ -1,17 +1,30 @@
 const express=require('express')
-const { requiresAuth } = require('express-openid-connect')
-const router=express.Router()
 
-const User = require('../models/User')
+const router = express.Router();
 
+// Get user by email
+router.get('/:email', async (req, res) => {
+  const user = await User.findOne({ email: req.params.email });
+  res.json(user);
+});
 
+// Create or update user
+router.post('/', async (req, res) => {
+  const { email, name, xp, level, phone } = req.body;
+  let user = await User.findOne({ email });
 
+  if (user) {
+    // Update
+    user.name = name;
+    user.xp = xp;
+    user.level = level;
+    user.phone = phone;
+    await user.save();
+  } else {
+    // Create
+    user = await User.create({ email, name, xp, level, phone });
+  }
 
-router.get('/',requiresAuth(), async(req,res)=>{
-    // const appUser=req.oidc.user.email;
-    const appUser='john@example.com'
-    const appUserData=await User.findOne({email:appUser})
-    res.json(appUserData)
-})
-
-module.exports=router;
+  res.json(user);
+});
+module.exports=router
