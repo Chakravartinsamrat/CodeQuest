@@ -75,7 +75,7 @@ export default class GymScene extends Phaser.Scene {
 
     // Original glowArea for GymInterface
     this.glowArea = this.add
-      .rectangle(625, 1073, 20, 20, 0x00ff00, 0.4)
+      .rectangle(355, 145, 40, 40, 0x00ff00, 0.4)
       .setOrigin(0)
       .setStrokeStyle(2, 0x00ff00, 1);
     this.tweens.add({
@@ -104,10 +104,10 @@ export default class GymScene extends Phaser.Scene {
 
     // Define NPC positions - placed in different corners of the gym
     const npcPositions = [
-      { x: 775, y: 995, level: 1, topic: "basics" }, // Original grunt position
-      { x: 1130, y: 830, level: 2, topic: "intermediate" },
-      { x: 470, y: 835, level: 3, topic: "advanced" },
-      { x: 745, y: 375, level: 4, topic: "expert" }
+      { x: 775, y: 995, level: 1, topic: "basics", npcID: "NPC001", xpgained: "15" }, // Original grunt position
+      { x: 1175, y: 815, level: 2, topic: "intermediate", npcID: "NPC002", xpgained: "20" },
+      { x: 425, y: 825, level: 3, topic: "advanced", npcID: "NPC003", xpgained: "25" },
+      { x: 680, y: 370, level: 4, topic: "expert", npcID: "NPC004", xpgained: "30" }
     ];
 
     // Create NPCs and their interaction areas
@@ -302,9 +302,9 @@ export default class GymScene extends Phaser.Scene {
       .on("pointerdown", () => {
         this.destroyDialog();
         if (type === "gym") {
-          this.startPokemonBattleTransition("gym");
+          this.launchGymInterface();
         } else {
-          this.startPokemonBattleTransition("grunt", level, topic);
+          this.launchGruntInterface(level, topic);
         }
       })
       .on("pointerover", () =>
@@ -363,75 +363,13 @@ export default class GymScene extends Phaser.Scene {
     if (this.noBtn) this.noBtn.destroy();
   }
 
-  startPokemonBattleTransition(interfaceType, level = 1, topic = null) {
+  // Simplified direct interface launch methods without transitions
+  launchGymInterface() {
     // Store player position for later use
     const playerPos = { x: this.player.x, y: this.player.y };
     this.game.registry.set("playerPos", playerPos);
     
-    // Create a camera flash effect
-    this.cameras.main.flash(300, 255, 255, 255);
-    
-    // Create horizontal line transition effects (Pokémon style)
-    const lines = [];
-    const lineCount = 10;
-    const lineHeight = this.cameras.main.height / lineCount;
-    
-    for (let i = 0; i < lineCount; i++) {
-      const isEvenLine = i % 2 === 0;
-      const line = this.add.rectangle(
-        this.cameras.main.centerX,
-        i * lineHeight + lineHeight / 2,
-        0, // Start with zero width
-        lineHeight,
-        0x000000,
-        1
-      ).setScrollFactor(0);
-      
-      lines.push(line);
-      
-      // Animate lines growing from center
-      this.tweens.add({
-        targets: line,
-        width: this.cameras.main.width + 100,
-        duration: 600,
-        delay: i * 60,
-        ease: 'Sine.easeInOut'
-      });
-    }
-    
-    // After all lines finish animating, show screen shake and fade to battle
-    this.time.delayedCall(1100, () => {
-      // Add screen shake
-      this.cameras.main.shake(300, 0.005);
-      
-      // After shake, fade to white and launch battle interface
-      this.time.delayedCall(350, () => {
-        this.cameras.main.fade(400, 255, 255, 255);
-        
-        // When fade completes, clean up and launch appropriate interface
-        this.time.delayedCall(450, () => {
-          // Destroy transition effects
-          lines.forEach(line => line.destroy());
-          
-          // Show the appropriate interface based on type
-          if (interfaceType === "gym") {
-            this.showGymInterface({topic:topic, level:7});
-          } else {
-            console.log("Starting grunt battle with level:", level);
-            console.log("Topic:", topic || this.gameId);
-            window.showGruntInterface({ 
-              topic: window.gameId ,
-              level: level 
-            });
-
-
-          }
-        });
-      });
-    });
-  }
-
-  showGymInterface() {
+    // Directly show the Gym interface
     if (window.showGymInterface) {
       window.showGymInterface({
         // Pass consistent height parameters for all quiz types
@@ -444,6 +382,24 @@ export default class GymScene extends Phaser.Scene {
       });
     } else {
       console.error("React Gym Interface not available");
+    }
+  }
+
+  launchGruntInterface(level, topic) {
+    // Store player position for later use
+    const playerPos = { x: this.player.x, y: this.player.y };
+    this.game.registry.set("playerPos", playerPos);
+    
+    // Directly show the Grunt interface
+    if (window.showGruntInterface) {
+      console.log("Starting grunt battle with level:", level);
+      console.log("Topic:", topic || this.gameId);
+      window.showGruntInterface({ 
+        topic: window.gameId,
+        level: level 
+      });
+    } else {
+      console.error("React Grunt Interface not available");
     }
   }
 }

@@ -286,7 +286,7 @@ export default class MainScene extends Phaser.Scene {
     this.npcDialogShadow = this.add
       .rectangle(
         sceneWidth / 2 + 15,
-        sceneHeight + 80,
+        sceneHeight + 20,
         sceneWidth,
         120,
         0x000000,
@@ -322,15 +322,15 @@ export default class MainScene extends Phaser.Scene {
     // Make dialog more visible by positioning it better
     this.npcDialogShadow.setPosition(
       this.cameras.main.width / 2 + 5,
-      this.cameras.main.height - 80
+      this.cameras.main.height - 160
     );
     this.npcDialogBg.setPosition(
       this.cameras.main.width / 2,
-      this.cameras.main.height - 80
+      this.cameras.main.height - 160
     );
     this.npcDialogText.setPosition(
       this.cameras.main.width / 2,
-      this.cameras.main.height - 80
+      this.cameras.main.height - 160
     );
 
     this.time.delayedCall(3000, () => {
@@ -455,13 +455,13 @@ export default class MainScene extends Phaser.Scene {
     // Get a random question
     const question = this.getRandomQuestion();
     
-    const sceneWidth = this.cameras.main.width;
+    const sceneWidth = this.cameras.main.width + 50;
     const sceneHeight = this.cameras.main.height;
     
     // Create dialog background
     this.dialogShadow = this.add
       .rectangle(
-        sceneWidth / 2 + 5,
+        sceneWidth / 2 + 500,
         sceneHeight / 2 + 5,
         500,
         300,
