@@ -147,11 +147,12 @@ export default class KnowledgeScene extends Phaser.Scene {
       .setInteractive({ useHandCursor: true })
       .setAlpha(0)
       .on("pointerdown", () => {
-        this.destroyDialog();
-        this.scene.start("ContentScene", {
-            challengeAccepted: true,
-            playerPos: { x: this.player.x, y: this.player.y }
-        });
+        this.destroyDialog(); 
+        this.showLearningDialog();
+        // this.scene.start("ContentScene", {
+        //     challengeAccepted: true,
+        //     playerPos: { x: this.player.x, y: this.player.y }
+        // });
       })
       .on("pointerover", () => this.yesBtn.setStyle({ backgroundColor: "#218838" }))
       .on("pointerout", () => this.yesBtn.setStyle({ backgroundColor: "#28a745" }));
@@ -193,5 +194,16 @@ export default class KnowledgeScene extends Phaser.Scene {
     if (this.dialogText) this.dialogText.destroy();
     if (this.yesBtn) this.yesBtn.destroy();
     if (this.noBtn) this.noBtn.destroy();
+  }
+
+  showLearningDialog() {
+    const playerPos = { x: this.player.x, y: this.player.y };
+    this.game.registry.set("playerPos", playerPos);
+    if (window.showChallengeInterface) {
+      window.showLearningInterface();
+      // this.scene.pause();
+    } else {
+      console.error("React Challengeinterface.jsx not available");
+    }
   }
 }
