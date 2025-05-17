@@ -5,16 +5,31 @@ export default class GymScene extends Phaser.Scene {
     super("GymScene");
   }
 
+  init(data){
+    if (data && data.gameId) {
+      this.gameId = data.gameId;
+      console.log('GymScene: Using gameId from scene data:', this.gameId);
+    } else if (this.game && this.game.gameId) {
+      this.gameId = this.game.gameId;
+      console.log('GymScene: Using gameId from game instance:', this.gameId);
+    } else if (window.gameId) {
+      this.gameId = window.gameId;
+      console.log('GymScene: Using gameId from window object:', this.gameId);
+    } else {
+      console.log('GymScene: Gameid not found');
+    }
+  }
+
   preload() {
     this.load.image("Gym-Arena.webp", "/Gym-Arena.webp");
     this.load.image("player", "/BOSS.png");
+    this.load.image("npc", "/NPC.png"); // Add NPC sprite
     this.load.spritesheet(
       "character",
-      // Use your actual sprite sheet path here
       "/PlayerMovement.png",
       {
-        frameWidth: 16, // Make sure these match your sprite sheet's actual dimensions
-        frameHeight: 24, // Make sure these match your sprite sheet's actual dimensions
+        frameWidth: 16, 
+        frameHeight: 24, 
       }
     );
   }
@@ -27,24 +42,23 @@ export default class GymScene extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, 1600, 1200);
 
     // Add player
-    // this.player = this.physics.add.sprite(745, 1169, "player").setScale(0.02);
     try {
-          this.playerController = new PlayerController(
-            this,
-            "character",
-            675,
-            950,
-            4
-          );
-          this.player = this.playerController.getPlayer();
-        } catch (error) {
-          console.error(
-            "Error creating PlayerController, falling back to original player:",
-            error
-          );
-          // OPTION 2: Fall back to original player if sprite sheet doesn't work
-          this.fallbackToOriginalPlayer();
-        }
+      this.playerController = new PlayerController(
+        this,
+        "character",
+        675,
+        950,
+        4
+      );
+      this.player = this.playerController.getPlayer();
+    } catch (error) {
+      console.error(
+        "Error creating PlayerController, falling back to original player:",
+        error
+      );
+      // OPTION 2: Fall back to original player if sprite sheet doesn't work
+      this.fallbackToOriginalPlayer();
+    }
     this.player.setCollideWorldBounds(true);
 
     this.cameras.main.startFollow(this.player);
@@ -72,20 +86,8 @@ export default class GymScene extends Phaser.Scene {
       repeat: -1,
     });
     
-    // New glowArea for GruntInterface at 940, 1060
-    this.gruntGlowArea = this.add
-      .rectangle(940, 1060, 40, 40, 0xff0000, 0.4)  // Increased size for better collision detection
-      .setOrigin(0)
-      .setStrokeStyle(2, 0xff0000, 1);
-    this.tweens.add({
-      targets: this.gruntGlowArea,
-      alpha: { from: 0.2, to: 0.8 },
-      duration: 800,
-      yoyo: true,
-      repeat: -1,
-    });
-
-    // this.showChallengeDialog()
+    // Setup NPCs with their interaction areas
+    this.setupNPCs();
 
     // Add spacebar interaction
     this.player.setInteractive();
@@ -96,13 +98,68 @@ export default class GymScene extends Phaser.Scene {
     this.navController = new NavigationController(this);
   }
 
+  setupNPCs() {
+    // Create an array to store our NPCs and their interaction areas
+    this.npcAreas = [];
+
+    // Define NPC positions - placed in different corners of the gym
+    const npcPositions = [
+      { x: 775, y: 995, level: 1, topic: "basics" }, // Original grunt position
+      { x: 1130, y: 830, level: 2, topic: "intermediate" },
+      { x: 470, y: 835, level: 3, topic: "advanced" },
+      { x: 745, y: 375, level: 4, topic: "expert" }
+    ];
+
+    // Create NPCs and their interaction areas
+    npcPositions.forEach((pos, index) => {
+      // Create NPC sprite
+      const npc = this.physics.add.sprite(pos.x, pos.y, "npc")
+        .setScale(0.03)
+        .setImmovable(true);
+      
+      // Create colored glow area for interaction
+      // Use different colors for different NPCs
+      const colors = [0xff0000, 0x0000ff, 0xffff00, 0xff00ff];
+      const glowArea = this.add
+        .rectangle(pos.x - 20, pos.y - 20, 40, 40, colors[index], 0.4)
+        .setOrigin(0)
+        .setStrokeStyle(2, colors[index], 1);
+      
+      // Add glow animation
+      this.tweens.add({
+        targets: glowArea,
+        alpha: { from: 0.2, to: 0.8 },
+        duration: 800,
+        yoyo: true,
+        repeat: -1,
+      });
+
+      // Add level text above NPC
+      const levelText = this.add
+        .text(pos.x, pos.y - 30, `Level ${pos.level}`, {
+          fontSize: "14px",
+          fill: "#ffffff",
+          backgroundColor: "#000000",
+          padding: { x: 3, y: 2 }
+        })
+        .setOrigin(0.5);
+
+      // Store NPC data for interaction checking
+      this.npcAreas.push({
+        npc,
+        glowArea,
+        levelText,
+        level: pos.level,
+        topic: pos.topic || this.gameId // Use provided topic or fall back to gameId
+      });
+    });
+  }
+
   update() {
     try {
       if (this.playerController) {
-        // Update player movement and animations through the controller
         const playerStatus = this.playerController.update();
       } else {
-        // Original movement code from your MainScene
         this.updateOriginalPlayer();
       }
 
@@ -111,10 +168,10 @@ export default class GymScene extends Phaser.Scene {
         `Player pos: ${Math.round(this.player.x)}, ${Math.round(this.player.y)}`
       );
 
-      // Check for interactions with glowing areas
     } catch (error) {
       console.error("Error in update:", error);
     }
+    
     this.player.setVelocity(0);
 
     if (this.cursors.left.isDown) {
@@ -128,11 +185,7 @@ export default class GymScene extends Phaser.Scene {
     } else if (this.cursors.down.isDown) {
       this.player.setVelocityY(this.speed);
     }
-    // Update player position text
-    this.debugText.setText(
-      `Player pos: ${Math.round(this.player.x)}, ${Math.round(this.player.y)}`
-    );
-
+    
     // Check for spacebar press
     if (Phaser.Input.Keyboard.JustDown(this.spacebar)) {
       // Check overlap with gym area
@@ -143,29 +196,23 @@ export default class GymScene extends Phaser.Scene {
         this.showChallengeDialog("gym");
       }
       
-      // Check overlap with grunt area
-      else if (Phaser.Geom.Rectangle.Overlaps(
-        this.gruntGlowArea.getBounds(),
-        this.player.getBounds()
-      )) {
-        this.showChallengeDialog("grunt");
+      // Check overlaps with all NPC areas
+      else {
+        for (let i = 0; i < this.npcAreas.length; i++) {
+          const npcData = this.npcAreas[i];
+          if (Phaser.Geom.Rectangle.Overlaps(
+            npcData.glowArea.getBounds(),
+            this.player.getBounds()
+          )) {
+            this.showChallengeDialog("grunt", npcData.level, npcData.topic);
+            break; // Exit loop once we've found an overlap
+          }
+        }
       }
-      
-      // Debug overlap detection
-      this.debugText.setText(
-        `Player pos: ${Math.round(this.player.x)}, ${Math.round(this.player.y)}\n` +
-        `Gym overlap: ${Phaser.Geom.Rectangle.Overlaps(this.glowArea.getBounds(), this.player.getBounds())}\n` +
-        `Grunt overlap: ${Phaser.Geom.Rectangle.Overlaps(this.gruntGlowArea.getBounds(), this.player.getBounds())}`
-      );
-    } else {
-      // Update player position text
-      this.debugText.setText(
-        `Player pos: ${Math.round(this.player.x)}, ${Math.round(this.player.y)}`
-      );
     }
   }
 
-  showChallengeDialog(type) {
+  showChallengeDialog(type, level = 1, topic = null) {
     // Get scene dimensions
     const sceneWidth = this.cameras.main.width - 40;
     const sceneHeight = this.cameras.main.height - 10; // Position 10px from bottom
@@ -206,9 +253,9 @@ export default class GymScene extends Phaser.Scene {
     });
 
     // Customize dialog text based on interface type
-    const dialogMessage = type === "gym" 
-      ? "Do you want to challenge me?" 
-      : "Do you want to fight me?";  // Changed text for grunt challenge
+    let dialogMessage = type === "gym" 
+      ? "Do you want to challenge the Gym Leader?" 
+      : `Level ${level} Grunt: Do you want to fight me?`;
 
     // Add dialog text (black, centered)
     this.dialogText = this.add
@@ -257,7 +304,7 @@ export default class GymScene extends Phaser.Scene {
         if (type === "gym") {
           this.startPokemonBattleTransition("gym");
         } else {
-          this.startPokemonBattleTransition("grunt");
+          this.startPokemonBattleTransition("grunt", level, topic);
         }
       })
       .on("pointerover", () =>
@@ -316,7 +363,7 @@ export default class GymScene extends Phaser.Scene {
     if (this.noBtn) this.noBtn.destroy();
   }
 
-  startPokemonBattleTransition(interfaceType) {
+  startPokemonBattleTransition(interfaceType, level = 1, topic = null) {
     // Store player position for later use
     const playerPos = { x: this.player.x, y: this.player.y };
     this.game.registry.set("playerPos", playerPos);
@@ -368,9 +415,16 @@ export default class GymScene extends Phaser.Scene {
           
           // Show the appropriate interface based on type
           if (interfaceType === "gym") {
-            this.showGymInterface();
+            this.showGymInterface({topic:topic, level:7});
           } else {
-            this.showGruntInterface();
+            console.log("Starting grunt battle with level:", level);
+            console.log("Topic:", topic || this.gameId);
+            window.showGruntInterface({ 
+              topic: window.gameId ,
+              level: level 
+            });
+
+
           }
         });
       });
@@ -390,22 +444,6 @@ export default class GymScene extends Phaser.Scene {
       });
     } else {
       console.error("React Gym Interface not available");
-    }
-  }
-  
-  showGruntInterface() {
-    if (window.showGruntInterface) {
-      window.showGruntInterface({
-        // Pass any necessary parameters similar to gym interface
-        quizHeights: {
-          computerScience: 500,
-          physics: 500,
-          english: 500,
-          math: 500
-        }
-      });
-    } else {
-      console.error("React Grunt Interface not available");
     }
   }
 }

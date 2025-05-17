@@ -6,7 +6,7 @@ export default class KnowledgeScene extends Phaser.Scene {
     
     // Define the knowledge areas data
     this.knowledgeAreas = [
-      { x: 625, y: 1073, topic: "math", subtopic: "algebra", hardness: "easy" },
+      { x: 625, y: 1073, topic: "math", id:1, subtopic: "algebra", hardness: "easy" },
       { x: 300, y: 950, topic: "physics", subtopic: "mechanics", hardness: "medium" },
       { x: 900, y: 900, topic: "biology", subtopic: "genetics", hardness: "hard" },
       { x: 500, y: 750, topic: "chemistry", subtopic: "elements", hardness: "medium" },

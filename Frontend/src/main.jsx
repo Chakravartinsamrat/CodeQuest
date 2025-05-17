@@ -55,10 +55,30 @@ window.showLearningInterface = ({topic, level}) => {
     />
   );
 };
-window.showGymInterface = () => {
+window.showGymInterface = ({ topic, level }) => {
   const challengeReactRoot = createRoot(challengeRoot);
   challengeReactRoot.render(
     <GymInterface
+      onClose={() => {
+        challengeReactRoot.unmount();
+        const game = window.game;
+        if (game && game.registry) {
+          const currentScene = game.registry.get('currentScene');
+          if (currentScene) {
+            currentScene.scene.resume();
+          }
+        }
+      }}
+    />
+  );
+};
+window.showGruntInterface = ({ topic, level }) => {
+  const challengeReactRoot = createRoot(challengeRoot);
+
+  challengeReactRoot.render(
+    <GruntInterface
+      topic={topic}
+      level={level}
       onClose={() => {
         challengeReactRoot.unmount();
         const game = window.game;
