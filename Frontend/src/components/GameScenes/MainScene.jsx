@@ -168,6 +168,15 @@ this.input.keyboard.on('keydown-P', (event) => {
     sceneManager.navigateToScene(this, "GymScene");
   }
 
+  if (
+    this.player.x >= 1020 &&
+    this.player.x <= 1080 && // 955 + 20 (rectangle width)
+    this.player.y >= 1065 &&
+    this.player.y <= 1125    // 875 + 10 (rectangle height)
+  ) {
+    sceneManager.navigateToScene(this, "GruntScene");
+  }
+
 
   }
 }

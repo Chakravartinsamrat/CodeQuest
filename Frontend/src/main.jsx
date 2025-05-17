@@ -2,9 +2,10 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
 import App from './App.jsx';
-import Challengeinterface from './Challengeinterface.jsx';
+import Challengeinterface from './ChallengeInterface.jsx';
 import LearningScene from './LearningInterface.jsx';
 import GymInterface from './GymInterface.jsx';
+import GruntInterface from './GruntInterface';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -67,3 +68,20 @@ window.showGymInterface = () => {
     />
   );
 };
+window.showGruntInterface = () => {
+	const challengeReactRoot = createRoot(challengeRoot);
+	challengeReactRoot.render(
+	  <GruntInterface
+		onClose={() => {
+		  challengeReactRoot.unmount();
+		  const game = window.game;
+		  if (game && game.registry) {
+			const currentScene = game.registry.get('currentScene');
+			if (currentScene) {
+			  currentScene.scene.resume();
+			}
+		  }
+		}}
+	  />
+	);
+  };
