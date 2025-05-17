@@ -9,6 +9,7 @@ export default function Landing() {
         backgroundImage: `url('/bg.jpg')`, // adjust path if in /public or /src
         backgroundSize: 'cover',
         backgroundPosition: 'center',
+        backgroundAttachment:'fixed'
       }}
     >
       {/* Gradient Overlay */}
@@ -26,7 +27,7 @@ export default function Landing() {
           The most fun and beginner-friendly way to learn to code. ✨
         </p>
 
-        <Link to="/get-started">
+        <Link to="/game">
           <button className="mt-6 bg-yellow-600 hover:bg-yellow-500 text-white px-6 py-2 text-lg rounded shadow-md transition duration-300">
             Get Started
           </button>

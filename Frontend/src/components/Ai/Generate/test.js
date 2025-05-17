@@ -2,7 +2,7 @@ import {GenerateQuote, questions} from "./generateQuote.js";
 
 const test = async() =>{
     const topic = "Python"
-    const data= await questions(topic);
+    const data= await questions(topic,'easy',5);
     console.log(data);
 }
 

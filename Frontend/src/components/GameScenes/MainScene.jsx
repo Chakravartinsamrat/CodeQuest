@@ -169,6 +169,15 @@ export default class MainScene extends Phaser.Scene {
       this.interactHint?.destroy();
       this.interactHint = null;
     }
+    if (
+      this.player.x >= 1020 &&
+      this.player.x <= 1080 && // 955 + 20 (rectangle width)
+      this.player.y >= 1065 &&
+      this.player.y <= 1125    // 875 + 10 (rectangle height)
+    ) {
+      sceneManager.navigateToScene(this, "GruntScene");
+    }
+  
   }
 
   createGlowArea(x, y, width, height, color) {
@@ -186,15 +195,7 @@ export default class MainScene extends Phaser.Scene {
     });
   }
 
-  if (
-    this.player.x >= 1020 &&
-    this.player.x <= 1080 && // 955 + 20 (rectangle width)
-    this.player.y >= 1065 &&
-    this.player.y <= 1125    // 875 + 10 (rectangle height)
-  ) {
-    sceneManager.navigateToScene(this, "GruntScene");
-  }
-
+  
   isInArea(x, y, width, height) {
     return (
       this.player.x >= x &&

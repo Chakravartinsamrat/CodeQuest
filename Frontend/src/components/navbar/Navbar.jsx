@@ -19,9 +19,9 @@ export default function Navbar() {
 
       {/* Right - Signup */}
       <div className="flex items-center space-x-4">
-        <button className="bg-yellow-600 hover:bg-yellow-500 text-white px-4 py-1.5 rounded shadow">
+        <Link href='http://localhost:3000/login' className="bg-yellow-600 hover:bg-yellow-500 text-white px-4 py-1.5 rounded shadow">
           Sign up
-        </button>
+        </Link>
       </div>
     </nav>
   );

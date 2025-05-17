@@ -32,20 +32,35 @@ const GenerateQuote = async (topic) => {
   }
 };
 
-const questions = async (topic) => {
- try  {
-  const prompt = `Act as a knowledgeable tutor. I am learning about ${topic}.
-  Please give me 5 questions to test my understanding.
-  The questions should progress from easy to difficult, with the 5th being the most challenging.
-  Do not provide the answers yet. Just list the questions clearly, numbered 1 through 5.`;
+const questions = async (topic, level, num) => {
+  try {
+    const prompt = `Act as a knowledgeable tutor. I am learning about "${topic}".
+Please generate exactly ${num} questions at a "${level}" difficulty.
+For each question, provide:
+- The question as a string
+- The answer
+- A hint
+leave out the backticks json and the trailing ones
+give me pure text form json
+Return the response as a **valid JSON array** of objects, like:
+[
+  {
+    "question": "Question 1 text...",
+    "answer": "Answer 1",
+    "hint": "Hint 1"
+  },
+  ...
+]`;
+    const result = await model.generateContent(prompt);
+    const text = await result.response.text();
+    const json = JSON.parse(text);
+    console.log(json);
+    return json;
+  }
+  catch (err) {
+    console.log(err);
 
- const result = await model.generateContent(prompt);
- return result.response.text();
- }
- catch(err){
-  console.log(err);
-  
- }
+  }
 }
 
 export { GenerateQuote, questions };

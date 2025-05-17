@@ -23,7 +23,7 @@ export default function HeroPage() {
         </section>
   
         {/* Footer */}
-        <footer className="w-full bg-yellow-600 text-white text-sm py-6 px-6 md:px-20 flex flex-col md:flex-row justify-between items-center">
+        <footer className="w-full bg-yellow-600 text-white text-lg py-6 px-6 md:px-20 flex flex-col md:flex-row justify-between items-center">
           <p>© {new Date().getFullYear()} CodeQuest. All rights reserved.</p>
           <div className="flex space-x-6 mt-4 md:mt-0">
             <a href="/about" className="hover:text-white transition">About</a>
