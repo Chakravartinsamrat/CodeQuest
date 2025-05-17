@@ -47,7 +47,6 @@ app.get("/api/user/:email", async (req, res) => {
 
 
 
-
 app.post("/api/user", async (req, res) => {
   const { email, xp, level } = req.body;
 
@@ -62,6 +61,70 @@ app.post("/api/user", async (req, res) => {
 
   const { _id, ...cleanNewUser } = newUser.toObject();
   res.status(201).json(cleanNewUser);
+});
+const levelThresholds = [
+  0,    // Level 1
+  50,   // Level 2
+  120,  // Level 3
+  200,  // Level 4
+  300,  // Level 5
+  420,  // Level 6
+  560,  // Level 7
+  720,  // Level 8
+  900,  // Level 9
+  1100, // Level 10
+  1320, // Level 11
+  1560, // Level 12
+  1820, // Level 13
+  2100, // Level 14
+  2400, // Level 15
+  2720, // Level 16
+  3060, // Level 17
+  3420, // Level 18
+  3800, // Level 19
+  4200, // Level 20
+];
+function calculateLevel(xp) {
+  for (let i = levelThresholds.length - 1; i >= 0; i--) {
+    if (xp >= levelThresholds[i]) return i + 1;
+  }
+  return 1;
+}
+app.post("/update-xp", async (req, res) => {
+  try {
+    const { useremail, xpgained, npcID } = req.body;
+
+    if (!useremail || !xpgained || !npcID) {
+      return res.status(400).json({ error: "Missing required query parameters." });
+    }
+
+    const user = await User.findOne({ email: useremail });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    const newXP = user.xp + parseInt(xpgained);
+    const newLevel = calculateLevel(newXP);
+
+    const updatedUser = await User.findOneAndUpdate(
+      { email: useremail },
+      {
+        $set: { xp: newXP, level: newLevel },
+        $addToSet: { npcIDs: npcID },
+      },
+      { new: true }
+    );
+
+    res.status(200).json({
+      message: "XP and level updated successfully.",
+      updatedUser,
+    });
+
+  } catch (err) {
+    console.error("Error in /update-xp:", err);
+    res.status(500).json({ error: "Internal server error." });
+  }
 });
 
 

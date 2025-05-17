@@ -17,7 +17,11 @@ const userSchema = new mongoose.Schema({
   xp:{
     type:Number,
     default:1
-  }
+  },
+  npcIDs: {
+    type: [String],
+    default: [],
+  },
 }, {
   timestamps: true
 });
