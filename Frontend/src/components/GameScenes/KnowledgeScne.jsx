@@ -50,13 +50,6 @@ export default class KnowledgeScene extends Phaser.Scene {
       Phaser.Input.Keyboard.KeyCodes.SPACE
     );
 
-    this.yes = this.input.keyboard.addKey(
-      Phaser.Input.Keyboard.KeyCodes.Y
-    );
-
-    this.no = this.input.keyboard.addKey(
-      Phaser.Input.Keyboard.KeyCodes.N
-    )
     this.navController = new NavigationController(this);
   }
 

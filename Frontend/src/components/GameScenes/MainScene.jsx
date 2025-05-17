@@ -64,7 +64,40 @@ export default class MainScene extends Phaser.Scene {
       yoyo: true,
       repeat: -1,
     });
-    this.navController = new NavigationController(this);
+    this.glowArea = this.add.rectangle(650, 850, 60, 40, 0x00ff00, 0.4)
+      .setOrigin(0)
+      .setStrokeStyle(2, 0x00ff00, 1);
+
+    // Optionally, make it pulse using tween
+    this.tweens.add({
+      targets: this.glowArea,
+      alpha: { from: 0.2, to: 0.8 },
+      duration: 800,
+      yoyo: true,
+      repeat: -1,
+    });
+this.navController = new NavigationController(this);
+
+// Create a glowing area using a semi-transparent green rectangle
+this.challengeGlowScene = this.add.rectangle(955, 875, 20, 10, 0x0000FF, 0.4)
+  .setOrigin(0)
+  .setStrokeStyle(2, 0x00ff00, 1);
+
+// Optionally, make it pulse using tween
+this.tweens.add({
+  targets: this.challengeGlowScene,
+  alpha: { from: 0.2, to: 0.8 },
+  duration: 800,
+  yoyo: true,
+  repeat: -1,
+});
+
+this.input.keyboard.on('keydown-P', (event) => {
+    if (event.shiftKey) {
+      // Launch the menu scene as an overlay
+      this.scene.launch('MenuScene');
+    }
+  });
   }
 
   update() {
@@ -95,6 +128,24 @@ export default class MainScene extends Phaser.Scene {
     ) {
       sceneManager.navigateToScene(this, "KnowledgeScene");
     }
+    // if (
+    //   this.player.x > 680 &&
+    //   this.player.x < 740 &&  // 630 + 60
+    //   this.player.y > 920 &&
+    //   this.player.y < 960     // 870 + 40
+    // ) {
+    //   sceneManager.navigateToScene(this, "TournamentScene");
+    // }
+  if (
+    this.player.x >= 955 &&
+    this.player.x <= 975 && // 955 + 20 (rectangle width)
+    this.player.y >= 875 &&
+    this.player.y <= 885    // 875 + 10 (rectangle height)
+  ) {
+    // Start ChallengeScene and pass player position
+    this.scene.start("ChallengeScene", { playerX: 855, playerY: 1003 });
+  }
+
 
   }
 }
