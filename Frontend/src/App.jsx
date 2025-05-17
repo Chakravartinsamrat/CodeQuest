@@ -1,6 +1,9 @@
+
 import { useState, useRef, useEffect } from 'react';
-import './App.css';
-import Game from './components/Game';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import './App.css'
+import Game from './components/Game'
+import Home from './pages/Home/Home'
 
 function App() {
   const gameContainerRef = useRef(null);
@@ -46,15 +49,27 @@ function App() {
 
   return (
 
-      <div>
+
+     
+  
+    <>
+      <h1 class="text-3xl font-bold underline">
+      <Router>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/game" element={ <div>
         <button onClick={toggleFullScreen} className="fullscreen-button">
         {isFullscreen ? 'Exit Full Screen' : 'Full Screen'}
       </button>
     <div ref={gameContainerRef} className="game-container">
       <Game w={w} h={h} isFullscreen={isFullscreen} />
     </div>
-      </div>
-  );
+      </div>} />
+      </Routes>
+    </Router>
+  </h1>
+    </>
+  )
 }
 
 export default App;

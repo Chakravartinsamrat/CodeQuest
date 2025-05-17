@@ -18,9 +18,7 @@ const courseSchema = new mongoose.Schema({
     }
   ],
   createdBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    default: null
+    type: String,
   }
 }, {
   timestamps: true
