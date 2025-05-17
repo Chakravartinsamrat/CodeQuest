@@ -23,6 +23,7 @@ export default class MainScene extends Phaser.Scene {
     // Set world bounds
     this.physics.world.setBounds(0, 0, 1600, 1200);
     this.cameras.main.setBounds(0, 0, 1600, 1200);
+    this.cameras.main.setZoom(1.5)
 
     // Create player
     this.player = this.physics.add.sprite(675, 950, "player").setScale(0.01);
