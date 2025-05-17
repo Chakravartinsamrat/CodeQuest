@@ -5,6 +5,7 @@ import App from './App.jsx';
 import Challengeinterface from './ChallengeInterface.jsx';
 import LearningScene from './LearningInterface.jsx';
 import GymInterface from './GymInterface.jsx';
+import GruntInterface from './GruntInterface';
 import TournamentScene from './TournamentInterface.jsx';
 
 createRoot(document.getElementById('root')).render(
@@ -68,6 +69,7 @@ window.showGymInterface = () => {
     />
   );
 };
+
 window.showTournamentInterface = () => {
   const challengeReactRoot = createRoot(challengeRoot);
   challengeReactRoot.render(
@@ -85,3 +87,4 @@ window.showTournamentInterface = () => {
     />
   );
 };
+
