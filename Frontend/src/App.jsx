@@ -1,34 +1,39 @@
-import { useState, useRef, useEffect } from 'react';
-import './App.css';
-import Game from './components/Game';
+import { useState, useRef, useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import "./App.css";
+import Game from "./components/Game";
+import Home from "./pages/Home/Home";
 
 function App() {
   const gameContainerRef = useRef(null);
-  const [w, setW] = useState(800);
-  const [h, setH] = useState(600);
+  const [w, setW] = useState(window.innerWidth);
+  const [h, setH] = useState(window.innerHeight);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Add event listener for fullscreen changes
-  useEffect(() => { 
+  useEffect(() => {
     const handleFullscreenChange = () => {
       const fullscreenActive = !!document.fullscreenElement;
       setIsFullscreen(fullscreenActive);
-      
-      if (fullscreenActive) {
-        setW(window.innerWidth);
+
+      // if (fullscreenActive) {
+      //   setW(window.innerWidth);
+      //   setH(window.innerHeight);
+      // } else {
+      //   setW(800); // Reset to default
+      //   setH(600); // Reset to default
+      // }
+
+      setW(window.innerWidth);
         setH(window.innerHeight);
-      } else {
-        setW(800); // Reset to default
-        setH(600); // Reset to default
-      }
     };
 
     // Listen for fullscreen change event
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+
     // Cleanup
     return () => {
-      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
     };
   }, []);
 
@@ -45,15 +50,31 @@ function App() {
   };
 
   return (
-
-      <div>
-        <button onClick={toggleFullScreen} className="fullscreen-button">
-        {isFullscreen ? 'Exit Full Screen' : 'Full Screen'}
-      </button>
-    <div ref={gameContainerRef} className="game-container">
-      <Game w={w} h={h} isFullscreen={isFullscreen} />
-    </div>
-      </div>
+    <>
+      <h1 class="text-3xl font-bold underline">
+        <Router>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route
+              path="/game"
+              element={
+                <div>
+                  {/* <button
+                    onClick={toggleFullScreen}
+                    className="fullscreen-button"
+                  >
+                    {isFullscreen ? "Exit Full Screen" : "Full Screen"}
+                  </button> */}
+                  <div ref={gameContainerRef} className="game-container">
+                    <Game w={w} h={h} isFullscreen={isFullscreen} />
+                  </div>
+                </div>
+              }
+            />
+          </Routes>
+        </Router>
+      </h1>
+    </>
   );
 }
 

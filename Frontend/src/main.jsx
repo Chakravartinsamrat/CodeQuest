@@ -6,6 +6,7 @@ import Challengeinterface from './ChallengeInterface.jsx';
 import LearningScene from './LearningInterface.jsx';
 import GymInterface from './GymInterface.jsx';
 import GruntInterface from './GruntInterface';
+import TournamentScene from './TournamentInterface.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -68,20 +69,22 @@ window.showGymInterface = () => {
     />
   );
 };
-window.showGruntInterface = () => {
-	const challengeReactRoot = createRoot(challengeRoot);
-	challengeReactRoot.render(
-	  <GruntInterface
-		onClose={() => {
-		  challengeReactRoot.unmount();
-		  const game = window.game;
-		  if (game && game.registry) {
-			const currentScene = game.registry.get('currentScene');
-			if (currentScene) {
-			  currentScene.scene.resume();
-			}
-		  }
-		}}
-	  />
-	);
-  };
+
+window.showTournamentInterface = () => {
+  const challengeReactRoot = createRoot(challengeRoot);
+  challengeReactRoot.render(
+    <TournamentScene
+      onClose={() => {
+        challengeReactRoot.unmount();
+        const game = window.game;
+        if (game && game.registry) {
+          const currentScene = game.registry.get('currentScene');
+          if (currentScene) {
+            currentScene.scene.resume();
+          }
+        }
+      }}
+    />
+  );
+};
+
