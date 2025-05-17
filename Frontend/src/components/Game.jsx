@@ -4,7 +4,7 @@ import MainScene from './GameScenes/MainScene.jsx';
 import KnowledgeScene from './GameScenes/KnowledgeScne.jsx'; // Fixed typo
 import ContentScene from './GameScenes/ContentScene.jsx';
 import ChallengeScene from './GameScenes/ChallengeScene.jsx';
-import MenuScene from './GameScenes/MenuScene.jsx'; // Fixed casing
+import MenuScene from './GameScenes/menuScene.jsx'; // Fixed casing
 import TournamentScene from './GameScenes/TournamentScene.jsx';
 import GymScene from './GameScenes/GymScene.jsx';
 
