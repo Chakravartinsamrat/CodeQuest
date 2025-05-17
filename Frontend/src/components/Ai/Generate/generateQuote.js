@@ -15,7 +15,7 @@ const GenerateQuote = async (topic) => {
       return null;
     }
   }
-  else{
+  else {
     try {
       const prompt = `
         
@@ -26,10 +26,26 @@ const GenerateQuote = async (topic) => {
       return result.response.text();
     } catch (err) {
       console.log(`Error generating LeetCode question: ${err.message}`);
-    
+
       return null;
     }
   }
 };
 
-export {GenerateQuote};
+const questions = async (topic) => {
+ try  {
+  const prompt = `Act as a knowledgeable tutor. I am learning about ${topic}.
+  Please give me 5 questions to test my understanding.
+  The questions should progress from easy to difficult, with the 5th being the most challenging.
+  Do not provide the answers yet. Just list the questions clearly, numbered 1 through 5.`;
+
+ const result = await model.generateContent(prompt);
+ return result.response.text();
+ }
+ catch(err){
+  console.log(err);
+  
+ }
+}
+
+export { GenerateQuote, questions };

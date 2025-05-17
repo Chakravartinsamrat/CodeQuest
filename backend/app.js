@@ -30,7 +30,7 @@ app.use('/get-profile', getProfileRoute)
 app.use('/create-course', createCourse)
 app.use('/challenges/programming', getProgrammingChallengesRoute)
 
-app.get('/prompt', (req, res) => {
+app.post('/prompt', (req, res) => {
   const keyword = req.body
   res.send(`Act as a knowledgeable tutor. I am learning about ${keyword}.
   Please give me 5 questions to test my understanding.

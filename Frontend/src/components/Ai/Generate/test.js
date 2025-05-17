@@ -1,8 +1,8 @@
-import {GenerateQuote} from "./generateQuote.js";
+import {GenerateQuote, questions} from "./generateQuote.js";
 
 const test = async() =>{
     const topic = "Python"
-    const data= await GenerateQuote(topic);
+    const data= await questions(topic);
     console.log(data);
 }
 
