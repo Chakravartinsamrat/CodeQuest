@@ -1,298 +1,350 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { questions as generateQuestions } from './components/Ai/Generate/generateQuote';
+import { AnswerAnalyiser } from './components/Ai/Generate/AnalyseAnswer.js';
 
-export default function ChallengeInterface({ onClose }) {
+export default function TrainingInterface({ topic, level, onClose }) {
+  console.log("topic in training interface", topic);
+  // State variables
   const [conversation, setConversation] = useState([
-    { speaker: 'opponent', text: 'Welcome to the challenge! Are you ready?' }
+    { speaker: 'trainer', text: 'Training session started! Let\'s strengthen your knowledge!' }
   ]);
   const [userInput, setUserInput] = useState('');
-  const [codeInput, setCodeInput] = useState('// Write your code here');
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [score, setScore] = useState(0);
-  const [challengeComplete, setChallengeComplete] = useState(false);
-  const [subjectType, setSubjectType] = useState('math'); // Default subject
+  const [score, setScore] = useState(0); 
+  const [trainingComplete, setTrainingComplete] = useState(false);
+  const [streak, setStreak] = useState(0);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [feedbackType, setFeedbackType] = useState('');
+  const [animateProgress, setAnimateProgress] = useState(false);
+  const [questions, setQuestions] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [xpGained, setXpGained] = useState(0);
+  const [totalXp, setTotalXp] = useState(0);
+  const [showXpAnimation, setShowXpAnimation] = useState(false);
+  const [xpAmount, setXpAmount] = useState(0);
 
-  // Define different subject types
-  const subjects = ['math', 'physics', 'english', 'computer science'];
+  // Refs
+  const chatContainerRef = useRef(null);
+  const audioRef = useRef(null);
 
-  // Sample questions for different subjects
-  const questionsBySubject = {
-    math: [
-      {
-        question: "What's 7 × 8?",
-        answer: "56",
-        hint: "Think of it as 7 × 7 + 7"
-      },
-      {
-        question: "Solve for x: 3x + 5 = 20",
-        answer: "5",
-        hint: "Subtract 5 from both sides, then divide by 3"
-      },
-      {
-        question: "What's the area of a circle with radius 4?",
-        answer: ["50.27", "50.3", "50.26548", "16π"],
-        hint: "Use the formula πr²"
-      }
-    ],
-    physics: [
-      {
-        question: "What is Newton's Second Law?",
-        answer: ["f=ma", "force equals mass times acceleration", "force = mass × acceleration"],
-        hint: "It relates force, mass, and acceleration"
-      },
-      {
-        question: "What is the SI unit of electric current?",
-        answer: "ampere",
-        hint: "It starts with 'A'"
-      },
-      {
-        question: "What is the speed of light in a vacuum (in m/s)?",
-        answer: ["299792458", "3e8", "300000000"],
-        hint: "It's approximately 3×10⁸ m/s"
-      }
-    ],
-    english: [
-      {
-        question: "Who wrote 'Romeo and Juliet'?",
-        answer: ["shakespeare", "william shakespeare"],
-        hint: "He's often called the Bard of Avon"
-      },
-      {
-        question: "What's the opposite of 'benevolent'?",
-        answer: ["malevolent", "malicious", "cruel"],
-        hint: "It starts with 'mal-'"
-      },
-      {
-        question: "What figure of speech is 'The cloud danced across the sky'?",
-        answer: ["personification", "metaphor"],
-        hint: "It gives human qualities to a non-human thing"
-      }
-    ],
-    "computer science": [
-      {
-        question: "Write a function that returns the sum of two numbers.",
-        testCases: [
-          { inputs: [5, 3], expected: 8 },
-          { inputs: [-1, 1], expected: 0 }
-        ],
-        starterCode: "function sum(a, b) {\n  // Your code here\n}",
-        hint: "Make sure to return the result of a + b"
-      },
-      {
-        question: "Write a function that returns true if a string is a palindrome, false otherwise.",
-        testCases: [
-          { inputs: ["racecar"], expected: true },
-          { inputs: ["hello"], expected: false }
-        ],
-        starterCode: "function isPalindrome(str) {\n  // Your code here\n}",
-        hint: "Try comparing characters from opposite ends"
-      },
-      {
-        question: "Write a function that returns the factorial of a number.",
-        testCases: [
-          { inputs: [5], expected: 120 },
-          { inputs: [0], expected: 1 }
-        ],
-        starterCode: "function factorial(n) {\n  // Your code here\n}",
-        hint: "Remember that 0! = 1, and n! = n × (n-1)!"
-      }
-    ]
+  // Sound effects
+  const soundEffects = {
+    correct: "https://cdn.freesound.org/previews/320/320181_5260872-lq.mp3",
+    wrong: "https://cdn.freesound.org/previews/277/277025_5363851-lq.mp3",
+    complete: "https://cdn.freesound.org/previews/270/270404_5123851-lq.mp3",
+    xpGain: "https://cdn.freesound.org/previews/162/162476_311243-lq.mp3",
+    buttonClick: "https://cdn.freesound.org/previews/242/242501_4284968-lq.mp3"
   };
 
-  const [questions, setQuestions] = useState(questionsBySubject.math);
+  // Fetch questions when component mounts
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      setIsLoading(true);
+      try {
+        const data = await generateQuestions(topic, level, 5);
+        console.log("questions data", data);
+        setQuestions(data);
+        setIsLoading(false);
+        
+        // Add the first question to the conversation
+        if (data && data.length > 0) {
+          setConversation(prev => [
+            ...prev, 
+            { speaker: 'trainer', text: data[0].question }
+          ]);
+        }
+      } catch (error) {
+        console.error("Error fetching questions:", error);
+        setIsLoading(false);
+      }
+    };
+    
+    fetchQuestions();
+    
+    // Initialize audio element
+    audioRef.current = new Audio();
+    audioRef.current.volume = 0.3;
+    
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, [topic, level]);
 
-  // Change subject
-  const changeSubject = (subject) => {
-    setSubjectType(subject);
-    setQuestions(questionsBySubject[subject]);
-    setCurrentQuestion(0);
-    setScore(0);
-    setChallengeComplete(false);
-    setConversation([
-      { speaker: 'opponent', text: `Welcome to the ${subject} challenge! Are you ready?` }
-    ]);
-    setTimeout(() => {
-      addMessage('opponent', questionsBySubject[subject][0].question);
-    }, 1000);
-
-    if (subject === 'computer science') {
-      setCodeInput(questionsBySubject[subject][0].starterCode);
+  // Play sound effect
+  const playSound = (type) => {
+    if (audioRef.current) {
+      audioRef.current.src = soundEffects[type];
+      audioRef.current.volume = 0.3;
+      audioRef.current.play().catch(e => console.error("Error playing sound:", e));
     }
   };
+
+  // Scroll chat to bottom when new messages come in
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [conversation]);
 
   // Add a new message to the conversation
   const addMessage = (speaker, text) => {
     setConversation(prev => [...prev, { speaker, text }]);
   };
 
-  // Handle user input submission for regular quizzes
-  const handleSubmit = () => {
-    if (!userInput.trim()) return;
+  // Show feedback animation
+  const showFeedbackAnimation = (type) => {
+    setFeedbackType(type);
+    setShowFeedback(true);
+    setTimeout(() => {
+      setShowFeedback(false);
+    }, 1500);
+  };
 
-    // Add user message to conversation
+  // Show XP gain animation
+  const showXpGainAnimation = (amount) => {
+    setXpAmount(amount);
+    setShowXpAnimation(true);
+    setTimeout(() => {
+      setShowXpAnimation(false);
+    }, 2000);
+  };
+
+  // Get streak message
+  const getStreakMessage = (streak) => {
+    const messages = {
+      3: "Excellent! You're on a roll! 🔥",
+      4: "Impressive! Keep it up! ⚡",
+      5: "Unstoppable! 🌟",
+      6: "Legendary streak! 🏆",
+      7: "Absolutely dominating! 💯",
+      8: "Unbelievable mastery! 🔱",
+      9: "Beyond legendary! 👑",
+      10: "GODLIKE STREAK!!! 🌠"
+    };
+    
+    return messages[Math.min(streak, 10)] || "PHENOMENAL!!! 🌈";
+  };
+
+  // Calculate XP based on level, streak and correctness
+  const calculateXp = (isCorrect, currentStreak, questionLevel) => {
+    if (!isCorrect) return 0;
+    
+    // Base XP per correct answer depends on level
+    const baseXp = questionLevel * 10;
+    
+    // Streak bonus (starts at streak 2)
+    const streakMultiplier = currentStreak >= 2 ? 1 + (currentStreak * 0.1) : 1;
+    
+    // Calculate total XP
+    const totalXpEarned = Math.round(baseXp * streakMultiplier);
+    
+    return totalXpEarned;
+  };
+
+  // Get final message
+  const getFinalMessage = (score, total, totalXpGained) => {
+    const percentage = (score / total) * 100;
+    
+    if (percentage === 100) {
+      return `PERFECT TRAINING! Your score: ${score}/${total} and you earned ${totalXpGained} XP! 🏆`;
+    } else if (percentage >= 80) {
+      return `Training complete! Excellent work! Your score: ${score}/${total} with ${totalXpGained} XP earned! 🌟`;
+    } else if (percentage >= 60) {
+      return `Training complete! Well done! Your score: ${score}/${total} with ${totalXpGained} XP earned! ✨`;
+    } else {
+      return `Training complete! Your score: ${score}/${total} with ${totalXpGained} XP earned. Keep practicing! 💪`;
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!userInput.trim() || isLoading || questions.length === 0) return;
+    
+    // Play button click sound
+    playSound("buttonClick");
+    
     addMessage('user', userInput);
-
-    // Check if answer is correct
     const currentQ = questions[currentQuestion];
-    const isCorrect = Array.isArray(currentQ.answer) 
-      ? currentQ.answer.includes(userInput.toLowerCase())
-      : userInput.toLowerCase() === currentQ.answer.toLowerCase();
+    
+    // Use AI to analyze the answer
+    let isCorrect = false;
+    try {
+      const analysisResult = await AnswerAnalyiser(
+        Array.isArray(currentQ.answer) ? currentQ.answer[0] : currentQ.answer,
+        userInput,
+        level,
+        currentQuestion
+      );
+      
+      isCorrect = analysisResult === "YES";
+    } catch (error) {
+      console.error("Error analyzing answer:", error);
+      // Fallback to exact match in case of API error
+      isCorrect = Array.isArray(currentQ.answer) 
+        ? currentQ.answer.some(ans => userInput.toLowerCase().trim() === ans.toLowerCase().trim())
+        : userInput.toLowerCase().trim() === currentQ.answer.toLowerCase().trim();
+    }
 
     setTimeout(() => {
       if (isCorrect) {
-        addMessage('opponent', 'Correct! Well done.');
+        // Play sound effect
+        playSound("correct");
+        
+        // Show feedback
+        showFeedbackAnimation('correct');
+        
+        // Update streak
+        const newStreak = streak + 1;
+        setStreak(newStreak);
+        
+        // Calculate and add XP
+        const xpEarned = calculateXp(true, newStreak, level);
+        setXpGained(prev => prev + xpEarned);
+        setTotalXp(prev => prev + xpEarned);
+        
+        // Show XP animation
+        showXpGainAnimation(xpEarned);
+        
+        // Play XP gain sound
+        if (xpEarned > 0) {
+          setTimeout(() => {
+            playSound("xpGain");
+          }, 500);
+        }
+        
+        // Generate feedback based on streak
+        let feedback = 'Correct!';
+        if (newStreak >= 3) {
+          feedback = getStreakMessage(newStreak);
+        }
+        
+        addMessage('trainer', feedback);
         setScore(score + 1);
         
+        // Animate progress bar
+        setAnimateProgress(true);
+        setTimeout(() => setAnimateProgress(false), 500);
+        
         if (currentQuestion < questions.length - 1) {
-          setCurrentQuestion(currentQuestion + 1);
+          setCurrentQuestion(current => current + 1);
           setTimeout(() => {
-            addMessage('opponent', questions[currentQuestion + 1].question);
-          }, 1000);
+            addMessage('trainer', questions[currentQuestion + 1].question);
+          }, 1200);
         } else {
-          // Challenge complete
+          // Training complete
           setTimeout(() => {
-            addMessage('opponent', `Challenge complete! Your score: ${score + 1}/${questions.length}`);
-            setChallengeComplete(true);
-          }, 1000);
+            playSound("complete");
+            const finalScore = score + 1;
+            const message = getFinalMessage(finalScore, questions.length, xpGained + xpEarned);
+            addMessage('trainer', message);
+            setTrainingComplete(true);
+          }, 1200);
         }
       } else {
-        addMessage('opponent', `Not quite. ${currentQ.hint}`);
+        // Play sound effect
+        playSound("wrong");
+        
+        // Show feedback
+        showFeedbackAnimation('wrong');
+        
+        // Reset streak
+        setStreak(0);
+        
+        addMessage('trainer', `Not quite. ${currentQ.hint}`);
       }
     }, 500);
 
     setUserInput('');
   };
 
-  // Handle code submission
-  const handleCodeSubmit = () => {
-    // Add user code to conversation (shortened version)
-    const codeSnippet = codeInput.length > 50 
-      ? codeInput.substring(0, 50) + '...' 
-      : codeInput;
-    addMessage('user', `[CODE SUBMISSION]: ${codeSnippet}`);
-
-    const currentQ = questions[currentQuestion];
-
-    try {
-      // Create a function from code string
-      const evalCode = `
-        ${codeInput};
-        ${codeInput.split('function ')[1].split('(')[0]}
-      `;
-      
-      const func = new Function('return ' + evalCode)();
-      
-      // Run test cases
-      let allPassed = true;
-      const results = [];
-      
-      currentQ.testCases.forEach((testCase, idx) => {
-        try {
-          const result = func(...testCase.inputs);
-          const passed = result === testCase.expected;
-          results.push({ passed, result, expected: testCase.expected });
-          if (!passed) allPassed = false;
-        } catch (err) {
-          results.push({ passed: false, error: err.message });
-          allPassed = false;
-        }
-      });
-      
-      // Format results message
-      let resultMessage = 'Test Results:\n';
-      results.forEach((res, idx) => {
-        resultMessage += `Test ${idx + 1}: ${res.passed ? '✅ PASSED' : '❌ FAILED'}\n`;
-        if (!res.passed) {
-          if (res.error) {
-            resultMessage += `   Error: ${res.error}\n`;
-          } else {
-            resultMessage += `   Expected: ${res.expected}, Got: ${res.result}\n`;
-          }
-        }
-      });
-      
-      setTimeout(() => {
-        addMessage('opponent', resultMessage);
-        
-        if (allPassed) {
-          addMessage('opponent', 'All tests passed! Great job!');
-          setScore(score + 1);
-          
-          if (currentQuestion < questions.length - 1) {
-            setCurrentQuestion(currentQuestion + 1);
-            setTimeout(() => {
-              addMessage('opponent', questions[currentQuestion + 1].question);
-              setCodeInput(questions[currentQuestion + 1].starterCode);
-            }, 1000);
-          } else {
-            // Challenge complete
-            setTimeout(() => {
-              addMessage('opponent', `Challenge complete! Your score: ${score + 1}/${questions.length}`);
-              setChallengeComplete(true);
-            }, 1000);
-          }
-        } else {
-          addMessage('opponent', `Not all tests passed. ${currentQ.hint}`);
-        }
-      }, 500);
-      
-    } catch (err) {
-      setTimeout(() => {
-        addMessage('opponent', `Error in your code: ${err.message}. ${currentQ.hint}`);
-      }, 500);
-    }
+  // Function to get training level name
+  const getTrainingLevelName = (level) => {
+    const levels = {
+      1: "Novice",
+      2: "Apprentice",
+      3: "Adept",
+      4: "Expert",
+      5: "Master"
+    };
+    
+    return levels[level] || `Level ${level}`;
   };
 
-  // Initialize the first question
-  useEffect(() => {
-    setTimeout(() => {
-      addMessage('opponent', questions[0].question);
-    }, 1000);
-  }, []);
-
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-[1000]" style={{backgroundColor: 'rgba(0,0,0,0.75)'}}>
-      <div className="bg-white border-2 border-black rounded-lg w-full max-w-4xl flex flex-col overflow-hidden shadow-xl max-h-[90vh]">
-        <div className="bg-gray-800 text-white p-4 font-bold text-xl flex justify-between items-center">
-          <div className="flex items-center">
-            <span>Challenge: </span>
-            <div className="ml-2 flex space-x-2">
-              {subjects.map(subject => (
-                <button 
-                  key={subject} 
-                  onClick={() => changeSubject(subject)}
-                  className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                    subjectType === subject 
-                      ? 'bg-blue-500 text-white' 
-                      : 'bg-gray-700 hover:bg-gray-600'
-                  }`}
-                >
-                  {subject}
-                </button>
-              ))}
-            </div>
+    <div className="fixed inset-0  flex items-center justify-center bg-transparent z-[1000]">
+      {/* XP Gain Animation */}
+      {showXpAnimation && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
+          <div className="text-4xl font-bold text-yellow-300 animate-bounce">
+            +{xpAmount} XP
           </div>
-          {!challengeComplete && (
-            <button onClick={onClose} className="text-white hover:text-red-300">
+        </div>
+      )}
+      
+      {/* Feedback Animation */}
+      {showFeedback && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
+          <div className={`text-9xl animate-pulse ${feedbackType === 'correct' ? 'text-green-500' : 'text-red-500'}`}>
+            {feedbackType === 'correct' ? '✓' : '✗'}
+          </div>
+        </div>
+      )}
+      
+      <div className="bg-gray-900 border-2 border-blue-800 rounded-lg w-full max-w-4xl flex flex-col overflow-hidden shadow-xl max-h-screen">
+        <div className="bg-blue-900 text-white p-4 font-bold text-xl flex justify-between items-center border-b-2 border-blue-700">
+          <div className="flex items-center">
+            <span className="mr-2 text-yellow-300 flex items-center">
+              <span className="text-2xl mr-1">📚</span> Training: {topic} 📚 {getTrainingLevelName(level)}
+            </span>
+          </div>
+          
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center bg-gray-800 px-3 py-1 rounded-full">
+              <span className="text-yellow-400 font-bold mr-1">★</span>
+              <span className="text-yellow-100">Score: {score}</span>
+            </div>
+            
+            <div className="flex items-center bg-gray-800 px-3 py-1 rounded-full">
+              <span className="text-green-400 font-bold mr-1">✦</span>
+              <span className="text-green-100">XP: {xpGained}</span>
+            </div>
+            
+            <button 
+              onClick={onClose} 
+              className="text-gray-300 hover:text-red-300 transition-colors"
+            >
               ✕
             </button>
-          )}
+          </div>
         </div>
         
-        <div className="flex flex-row h-[calc(100%-4rem)] overflow-hidden">
+        <div className="flex flex-row h-96 overflow-hidden">
           {/* Left Side: Conversation Section */}
           <div className="w-1/2 p-4 bg-gray-800 flex flex-col">
-            <h2 className="text-lg font-bold text-white mb-2">Conversation</h2>
-            <div className="flex-grow bg-gray-700 rounded-lg p-4 overflow-y-auto mb-4">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-lg font-bold text-white">Training Session</h2>
+              {streak >= 3 && (
+                <div className="px-2 py-1 bg-orange-600 text-white rounded-full flex items-center">
+                  <span className="text-yellow-300 mr-1">🔥</span> Streak: {streak}
+                </div>
+              )}
+            </div>
+            <div 
+              ref={chatContainerRef}
+              className="flex-grow bg-gray-700 rounded-lg p-4 overflow-y-auto mb-4"
+            >
               {conversation.map((msg, index) => (
                 <div 
                   key={index} 
                   className={`mb-4 ${msg.speaker === 'user' ? 'text-right' : 'text-left'}`}
                 >
                   <div 
-                    className={`inline-block rounded-lg px-4 py-2 max-w-[90%] ${
+                    className={`inline-block rounded-lg px-4 py-2 max-w-xs ${
                       msg.speaker === 'user' 
-                        ? 'bg-blue-500 text-white' 
-                        : 'bg-gray-300 text-black'
+                        ? 'bg-blue-600 text-white' 
+                        : 'bg-teal-600 text-white'
                     }`}
                     style={msg.text.includes('\n') ? { whiteSpace: 'pre-wrap', textAlign: 'left' } : {}}
                   >
@@ -302,106 +354,115 @@ export default function ChallengeInterface({ onClose }) {
               ))}
             </div>
             
-            {!challengeComplete ? (
-              subjectType !== 'computer science' ? (
-                <div className="flex">
-                  <input
-                    type="text"
-                    value={userInput}
-                    onChange={(e) => setUserInput(e.target.value)}
-                    className="flex-grow p-2 rounded-l-lg border-0 focus:ring-2 focus:ring-blue-500"
-                    placeholder="Type your answer..."
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter') {
-                        handleSubmit();
-                      }
-                    }}
-                  />
-                  <button 
-                    onClick={handleSubmit} 
-                    className="bg-blue-500 text-white px-4 py-2 rounded-r-lg hover:bg-blue-600 transition-colors"
-                  >
-                    Send
-                  </button>
-                </div>
-              ) : (
-                <button 
-                  onClick={handleCodeSubmit} 
-                  className="w-full bg-green-500 text-white p-3 rounded-lg hover:bg-green-600 font-bold"
-                >
-                  Run Tests
-                </button>
-              )
-            ) : (
-              <button
-                onClick={onClose}
-                className="w-full bg-green-500 text-white p-3 rounded-lg hover:bg-green-600 font-bold"
+            <div className="flex bg-gray-900 rounded-lg p-1">
+              <input
+                type="text"
+                value={userInput}
+                onChange={(e) => setUserInput(e.target.value)}
+                className="flex-grow p-3 rounded-l-lg border-0 bg-gray-800 text-white"
+                placeholder="Type your answer..."
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSubmit();
+                  }
+                }}
+                disabled={isLoading || trainingComplete}
+              />
+              <button 
+                onClick={handleSubmit} 
+                className={`${isLoading || trainingComplete 
+                  ? 'bg-gray-600 cursor-not-allowed' 
+                  : 'bg-blue-600 hover:bg-blue-700'} text-white px-6 py-2 rounded-r-lg transition-colors`}
+                disabled={isLoading || trainingComplete}
               >
-                Return to Game
+                Send
               </button>
-            )}
+            </div>
           </div>
           
-          {/* Right Side: Content Section - Quiz or Code Editor based on subject */}
+          {/* Right Side: Content Section */}
           <div className="w-1/2 p-4 bg-gray-900 flex flex-col">
-            <h2 className="text-lg font-bold mb-2 text-white">
-              {subjectType === 'computer science' ? 'Coding Challenge' : 'Question'}
-            </h2>
+            <h2 className="text-lg font-bold text-white mb-2">Exercise</h2>
             
-            {subjectType !== 'computer science' ? (
-              /* Quiz View */
-              <div className="flex-grow bg-gray-800 rounded-lg p-6 flex flex-col items-center justify-center h-[400px]">
+            <div className="flex-grow bg-gray-800 rounded-lg p-6 flex flex-col items-center justify-center overflow-auto">
+              {isLoading ? (
                 <div className="text-center">
-                  <div className="text-2xl font-bold mb-4 text-white">
-                    Question {currentQuestion + 1}/{questions.length}
+                  <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+                  <p className="text-gray-300">Preparing training exercises...</p>
+                </div>
+              ) : (
+                <div className="text-center w-full">
+                  <div className="text-2xl font-bold mb-4 text-white flex items-center justify-center">
+                    <span className="bg-blue-700 text-white rounded-full w-10 h-10 flex items-center justify-center mr-2">
+                      {currentQuestion + 1}
+                    </span>
+                    <span className="text-gray-400">of</span>
+                    <span className="bg-gray-700 text-gray-300 rounded-full w-10 h-10 flex items-center justify-center ml-2">
+                      {questions.length}
+                    </span>
                   </div>
-                  <div className="text-xl mb-6 text-gray-100">
-                    {questions[currentQuestion]?.question || ''}
-                  </div>
-                  {challengeComplete && (
-                    <div className="bg-blue-900 border border-blue-700 text-blue-100 px-4 py-3 rounded">
-                      <div className="font-bold text-xl mb-2">Challenge Complete!</div>
-                      <div className="text-lg">
-                        Your score: {score}/{questions.length}
+                  {questions.length > 0 && (
+                    <div className="text-xl mb-6 text-gray-100 bg-gray-700 p-4 rounded-lg border-l-4 border-blue-500">
+                      {questions[currentQuestion]?.question || ''}
+                    </div>
+                  )}
+                  {trainingComplete && (
+                    <div className="bg-blue-900 border border-blue-700 text-blue-100 px-4 py-6 rounded-lg">
+                      <div className="font-bold text-2xl mb-3">
+                        Training Complete!
                       </div>
+                      <div className="text-xl mb-3">
+                        Your final score:
+                        <div className="mt-2 text-3xl font-bold">
+                          <span className="text-yellow-300">{score}</span>
+                          <span className="text-gray-400"> / </span>
+                          <span>{questions.length}</span>
+                        </div>
+                      </div>
+                      <div className="text-xl">
+                        Experience gained:
+                        <div className="mt-2 text-3xl font-bold text-green-300">
+                          +{xpGained} XP
+                        </div>
+                      </div>
+                      <button 
+                        onClick={onClose}
+                        className="mt-4 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-full transition-colors"
+                      >
+                        Return to Training Hub
+                      </button>
                     </div>
                   )}
                 </div>
-              </div>
-            ) : (
-              /* Code Editor View */
-              <div className="flex-grow flex flex-col">
-                <div className="bg-gray-800 rounded-lg p-4 mb-4 text-white">
-                  <div className="font-bold mb-2">Problem:</div>
-                  <div className="mb-4">{questions[currentQuestion]?.question || ''}</div>
-                  <div className="font-bold mb-2">Test Cases:</div>
-                  <div className="bg-gray-700 p-2 rounded text-sm font-mono text-gray-200">
-                    {questions[currentQuestion]?.testCases.map((test, idx) => (
-                      <div key={idx} className="mb-1">
-                        Input: ({test.inputs.join(', ')}) → Expected: {JSON.stringify(test.expected)}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                
-                <div className="flex-grow relative h-[300px]">
-                  <textarea
-                    value={codeInput}
-                    onChange={(e) => setCodeInput(e.target.value)}
-                    className="w-full h-full p-3 font-mono text-sm bg-gray-900 text-green-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    spellCheck="false"
-                  />
-                </div>
-              </div>
-            )}
+              )}
+            </div>
             
-            {/* Progress Bar */}
-            <div className="mt-4 bg-gray-700 p-3 rounded-lg text-white">
-              <div className="font-bold">Progress:</div>
-              <div className="w-full bg-gray-800 rounded-full h-4 mt-2">
+            {/* Progress and XP Bar */}
+            <div className="mt-4 bg-gray-800 p-3 rounded-lg text-white">
+              <div className="flex justify-between">
+                <div className="font-bold">Progress:</div>
+                <div>{isLoading ? '...' : `${currentQuestion + 1} of ${questions.length}`}</div>
+              </div>
+              <div className="w-full bg-gray-900 rounded-full h-4 mt-2">
                 <div 
-                  className="bg-blue-500 h-4 rounded-full transition-all duration-500 ease-out"
-                  style={{ width: `${((currentQuestion) / questions.length) * 100}%` }}
+                  className={`${
+                    animateProgress ? 'bg-blue-500 animate-pulse' : 'bg-blue-600'
+                  } h-4 rounded-full transition-all duration-1000`}
+                  style={{ width: isLoading || questions.length === 0 
+                    ? '0%' 
+                    : `${((currentQuestion) / questions.length) * 100}%` }}
+                ></div>
+              </div>
+              
+              {/* XP Progress */}
+              <div className="flex justify-between mt-3">
+                <div className="font-bold text-green-400">Experience:</div>
+                <div className="text-green-200">{xpGained} XP</div>
+              </div>
+              <div className="w-full bg-gray-900 rounded-full h-4 mt-2">
+                <div 
+                  className="bg-green-600 h-4 rounded-full transition-all duration-1000"
+                  style={{ width: `${Math.min((xpGained / (level * 100)) * 100, 100)}%` }}
                 ></div>
               </div>
             </div>
