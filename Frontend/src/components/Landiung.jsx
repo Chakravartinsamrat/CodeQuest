@@ -35,9 +35,7 @@ export default function Landing() {
         {/* Supported by logos (optional) */}
         <div className="mt-10 flex justify-center gap-6 opacity-80 text-xs md:text-sm">
           <span className="uppercase tracking-wider">Supported by</span>
-          <img src="/assets/github-logo.png" alt="GitHub" className="h-6" />
-          <img src="/assets/csta-logo.png" alt="CSTA" className="h-6" />
-          <img src="/assets/ny-logo.png" alt="NY State" className="h-6" />
+          No One
         </div>
       </div>
     </section>

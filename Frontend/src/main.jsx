@@ -2,7 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
 import App from './App.jsx';
-import Challengeinterface from './Challengeinterface.jsx';
+import Challengeinterface from './ChallengeInterface.jsx';
 import LearningScene from './LearningInterface.jsx';
 import GymInterface from './GymInterface.jsx';
 import TournamentScene from './TournamentInterface.jsx';
