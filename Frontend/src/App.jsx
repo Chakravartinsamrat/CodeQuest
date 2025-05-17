@@ -3,8 +3,13 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./App.css";
 import Game from "./components/Game";
 import Home from "./pages/Home/Home";
+import { RedirectToSignIn, SignedIn, SignedOut } from "@clerk/clerk-react";
+
+import CheckProfile from "./pages/CheckProfile";
+import Profile from "./pages/profile";
 
 function App() {
+
   const gameContainerRef = useRef(null);
   const [w, setW] = useState(window.innerWidth);
   const [h, setH] = useState(window.innerHeight);
@@ -25,7 +30,7 @@ function App() {
       // }
 
       setW(window.innerWidth);
-        setH(window.innerHeight);
+      setH(window.innerHeight);
     };
 
     // Listen for fullscreen change event
@@ -51,29 +56,49 @@ function App() {
 
   return (
     <>
-      <h1 class="text-3xl font-bold underline">
-        <Router>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route
-              path="/game"
-              element={
-                <div>
-                  {/* <button
+
+      <Router>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route
+            path="/game"
+            element={
+              <div>
+                {/* <button
                     onClick={toggleFullScreen}
                     className="fullscreen-button"
                   >
                     {isFullscreen ? "Exit Full Screen" : "Full Screen"}
                   </button> */}
-                  <div ref={gameContainerRef} className="game-container">
-                    <Game w={w} h={h} isFullscreen={isFullscreen} />
-                  </div>
+                <div ref={gameContainerRef} className="game-container">
+                  <Game w={w} h={h} isFullscreen={isFullscreen} />
                 </div>
-              }
-            />
-          </Routes>
-        </Router>
-      </h1>
+              </div>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <SignedIn>
+                <Profile />
+              </SignedIn>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <SignedIn>
+                  <Profile />
+              </SignedIn>
+            }  />
+            
+              {/* Open to all (or protected in main.tsx on redirect) */ }
+             
+          <Route path="/check-profile" element={<CheckProfile />} />
+
+        </Routes>
+      </Router>
+
     </>
   );
 }

@@ -21,7 +21,7 @@ const checkFirstLogin = async (req, res, next) => {
       await user.save();
 
       // Redirect to profile completion page
-      return res.redirect('/complete-profile');
+      
     }
 
     // User exists, proceed
