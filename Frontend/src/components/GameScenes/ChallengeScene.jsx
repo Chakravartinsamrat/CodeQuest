@@ -252,6 +252,13 @@ export default class ChallengeScene extends Phaser.Scene {
     this.physics.world.setBounds(0, 0, 1600, 1200);
     this.cameras.main.setBounds(0, 0, 1600, 1200);
 
+    //CREATE OBSTACLES
+    this.createObstacles();
+
+      //add collision
+      this.physics.add.collider(this.player, this.obstacles);
+
+
     // Add player
     // this.player = this.physics.add.sprite(850, 1103, "player").setScale(0.02);
     try {
@@ -382,6 +389,26 @@ export default class ChallengeScene extends Phaser.Scene {
     ) {
       this.scene.start("MainScene");
     }
+  }
+  createObstacles(){
+    this.obstacles = this.physics.add.staticGroup();
+
+
+    // this.createObstacleRect(275, 417,10,110);
+  
+  }
+  createObstacleRect(x, y, width, height) {
+    // Create the filled rectangle (semi-transparent)
+    const fillRect = this.add.rectangle(x, y, width, height, 0x000000, 0.3);
+    fillRect.setOrigin(0, 0);
+    
+    // Create the red border (stroke)
+    const borderRect = this.add.rectangle(x, y, width, height);
+    borderRect.setOrigin(0, 0);
+    borderRect.setStrokeStyle(4, 0xFF0000);
+    
+    // Add only the fill rectangle to the physics group (for collision)
+    this.obstacles.add(fillRect, true);
   }
 
   showChallengeDialog() {
