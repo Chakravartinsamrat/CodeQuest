@@ -7,6 +7,11 @@ import ChallengeScene from './GameScenes/ChallengeScene.jsx';
 import MenuScene from './GameScenes/menuScene.jsx'; // Fixed casing
 import TournamentScene from './GameScenes/TournamentScene.jsx';
 import GymScene from './GameScenes/GymScene.jsx';
+import ArcadeHome from './Arcade/ArcadeHome.jsx';
+import DinoGameScene from './Arcade/DinoGame/DinoGameScene.jsx';
+import TetrisScene from './Arcade/Tetris/Tetris.jsx';
+import SnakeScene from './Arcade/Snake/SnakeGame.jsx';
+
 
 const Game = ({ w, h, isFullscreen }) => {
   const gameRef = useRef(null);
@@ -64,6 +69,10 @@ const Game = ({ w, h, isFullscreen }) => {
       gameInstanceRef.current.scene.add('MenuScene', MenuScene);
       gameInstanceRef.current.scene.add('TournamentScene', TournamentScene);
       gameInstanceRef.current.scene.add('GymScene', GymScene);
+      gameInstanceRef.current.scene.add('ArcadeScene', ArcadeHome);
+      gameInstanceRef.current.scene.add('DinoScene', DinoGameScene)
+      gameInstanceRef.current.scene.add('TetrisScene', TetrisScene)
+      gameInstanceRef.current.scene.add('SnakeGame', SnakeScene)
 
       // Start MainScene with gameId parameter
       console.log('Starting MainScene with gameId:', currentGameId);
