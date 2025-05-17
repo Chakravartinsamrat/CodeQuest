@@ -222,6 +222,12 @@ export default class GymScene extends Phaser.Scene {
 
 
     // this.createObstacleRect(275, 417,10,110);
+     this.createObstacleRect(460, 720,672,25);
+    this.createObstacleRect(947, 950,542,25);
+    this.createObstacleRect(1158, 900,330,50);
+    this.createObstacleRect(100, 950,542,25);
+    this.createObstacleRect(100, 900,330,50);
+    this.createObstacleRect(100, 465,680,50);
   
   }
 
