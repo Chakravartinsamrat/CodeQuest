@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 
-  
+
 export default function ProfilePage() {
-    const { user } = useUser();
+  const { user } = useUser();
   const [profile, setProfile] = useState(null);
 
   useEffect(() => {
@@ -49,28 +49,41 @@ export default function ProfilePage() {
           <p className="text-gray-300 text-lg">Here’s your current profile journey.</p>
         </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-10">
-          <div className="bg-white/10 p-6 rounded-2xl shadow-inner flex items-center gap-4 hover:scale-105 transition-transform duration-300">
-            <Star className="w-10 h-10 text-yellow-400" />
-            <div>
-              <p className="text-sm text-gray-300">Level</p>
-              <p className="text-3xl font-bold">{profile.level}</p>
-            </div>
+        <div className="max-w-4xl mx-auto mt-12 px-6">
+          {/* Profile Picture & Name */}
+          <div className="flex flex-col items-center gap-4">
+            <img
+              src={user.imageUrl} // from Clerk user object
+              alt="Profile"
+              className="w-28 h-28 rounded-full border-4 border-white shadow-lg object-cover"
+            />
+            <h1 className="text-2xl font-semibold text-white">{user.firstName} {user.lastName}</h1>
           </div>
 
-          <div className="bg-white/10 p-6 rounded-2xl shadow-inner flex items-center gap-4 hover:scale-105 transition-transform duration-300">
-            <Flame className="w-10 h-10 text-red-400" />
-            <div>
-              <p className="text-sm text-gray-300">XP</p>
-              <p className="text-3xl font-bold">{profile.xp}</p>
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-10">
+            <div className="bg-white/10 p-6 rounded-2xl shadow-inner flex items-center gap-4 hover:scale-105 transition-transform duration-300">
+              <Star className="w-10 h-10 text-yellow-400" />
+              <div>
+                <p className="text-sm text-gray-300">Level</p>
+                <p className="text-3xl font-bold">{profile.level}</p>
+              </div>
             </div>
-          </div>
 
-          <div className="bg-white/10 p-6 rounded-2xl shadow-inner flex items-center gap-4 hover:scale-105 transition-transform duration-300 break-words">
-            <Mail className="w-10 h-10 text-blue-400" />
-            <div>
-              <p className="text-sm text-gray-300">Email</p>
-              <p className="text-lg font-medium break-words">{profile.email}</p>
+            <div className="bg-white/10 p-6 rounded-2xl shadow-inner flex items-center gap-4 hover:scale-105 transition-transform duration-300">
+              <Flame className="w-10 h-10 text-red-400" />
+              <div>
+                <p className="text-sm text-gray-300">XP</p>
+                <p className="text-3xl font-bold">{profile.xp}</p>
+              </div>
+            </div>
+
+            <div className="bg-white/10 p-8 rounded-2xl shadow-inner flex items-center gap-4 hover:scale-105 transition-transform duration-300 break-words">
+              <Mail className="w-10 h-10 text-blue-400" />
+              <div>
+                <p className="text-sm text-gray-300">Email</p>
+                <p className="text-lg font-medium break-words">{profile.email}</p>
+              </div>
             </div>
           </div>
         </div>
