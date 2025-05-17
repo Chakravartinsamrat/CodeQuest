@@ -41,6 +41,8 @@ export default class GymScene extends Phaser.Scene {
     this.physics.world.setBounds(0, 0, 1600, 1200);
     this.cameras.main.setBounds(0, 0, 1600, 1200);
 
+    this.createObstacles();
+
     // Add player
     try {
       this.playerController = new PlayerController(
@@ -64,6 +66,8 @@ export default class GymScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.player);
     this.cursors = this.input.keyboard.createCursorKeys();
     this.speed = 300;
+        this.physics.add.collider(this.player, this.obstacles);
+
 
     this.debugText = this.add
       .text(10, 10, "Use arrow keys to move", {
@@ -185,6 +189,8 @@ export default class GymScene extends Phaser.Scene {
     } else if (this.cursors.down.isDown) {
       this.player.setVelocityY(this.speed);
     }
+
+    
     
     // Check for spacebar press
     if (Phaser.Input.Keyboard.JustDown(this.spacebar)) {
@@ -210,6 +216,33 @@ export default class GymScene extends Phaser.Scene {
         }
       }
     }
+  }
+  createObstacles(){
+    this.obstacles = this.physics.add.staticGroup();
+
+
+    // this.createObstacleRect(275, 417,10,110);
+     this.createObstacleRect(460, 720,672,25);
+    this.createObstacleRect(947, 950,542,25);
+    this.createObstacleRect(1158, 900,330,50);
+    this.createObstacleRect(100, 950,542,25);
+    this.createObstacleRect(100, 900,330,50);
+    this.createObstacleRect(100, 465,680,50);
+  
+  }
+
+  createObstacleRect(x, y, width, height) {
+    // Create the filled rectangle (semi-transparent)
+    const fillRect = this.add.rectangle(x, y, width, height, 0x000000, 0.3);
+    fillRect.setOrigin(0, 0);
+    
+    // Create the red border (stroke)
+    const borderRect = this.add.rectangle(x, y, width, height);
+    borderRect.setOrigin(0, 0);
+    borderRect.setStrokeStyle(4, 0xFF0000);
+    
+    // Add only the fill rectangle to the physics group (for collision)
+    this.obstacles.add(fillRect, true);
   }
 
   showChallengeDialog(type, level = 1, topic = null) {

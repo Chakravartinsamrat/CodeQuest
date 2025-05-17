@@ -21,11 +21,16 @@ export default class GymScene extends Phaser.Scene {
   }
 
   create() {
-    const bg = this.add.image(200, 0, "Gym-Arena.webp").setOrigin(0);
+    const bg = this.add.image(80, 0, "Gym-Arena.webp").setOrigin(0);
     bg.setDisplaySize(1600, 1000); // match world and camera bounds exactly
 
-    this.physics.world.setBounds(200, 0, 1600, 1000);
-    this.cameras.main.setBounds(0, 0, 1600, 1000);
+    this.physics.world.setBounds(80, 0, 1600, 1000);
+    this.cameras.main.setBounds(80, 0, 1600, 1000);
+
+
+    //ABOUT TO CREATE OBSTACLES
+      this.createObstacles();
+
 
     // Add player
     // this.player = this.physics.add.sprite(500, 408, "player").setScale(0.02);
@@ -33,8 +38,8 @@ export default class GymScene extends Phaser.Scene {
       this.playerController = new PlayerController(
         this,
         "character",
-        675,
-        950,
+        890,
+        863,
         5
       );
       this.player = this.playerController.getPlayer();
@@ -51,6 +56,8 @@ export default class GymScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.player);
     this.cursors = this.input.keyboard.createCursorKeys();
     this.speed = 300;
+        this.physics.add.collider(this.player, this.obstacles);
+
 
     this.debugText = this.add
       .text(10, 10, "Use arrow keys to move", {
@@ -129,6 +136,29 @@ export default class GymScene extends Phaser.Scene {
     ) {
       this.showChallengeDialog();
     }
+  }
+  createObstacles(){
+    this.obstacles = this.physics.add.staticGroup();
+
+
+    this.createObstacleRect(225, 165,90,140);
+    this.createObstacleRect(755, 30,250,140);
+    this.createObstacleRect(1410, 165,90,140);
+    
+  
+  }
+  createObstacleRect(x, y, width, height) {
+    // Create the filled rectangle (semi-transparent)
+    const fillRect = this.add.rectangle(x, y, width, height, 0x000000, 0.3);
+    fillRect.setOrigin(0, 0);
+    
+    // Create the red border (stroke)
+    const borderRect = this.add.rectangle(x, y, width, height);
+    borderRect.setOrigin(0, 0);
+    borderRect.setStrokeStyle(4, 0xFF0000);
+    
+    // Add only the fill rectangle to the physics group (for collision)
+    this.obstacles.add(fillRect, true);
   }
 
   showChallengeDialog() {
