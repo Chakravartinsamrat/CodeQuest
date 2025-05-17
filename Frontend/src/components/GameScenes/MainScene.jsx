@@ -61,7 +61,7 @@ export default class MainScene extends Phaser.Scene {
     
     // OPTION 1: Use the PlayerController with your character sprite sheet
     try {
-      this.playerController = new PlayerController(this, 'character', 675, 950, 2);
+      this.playerController = new PlayerController(this, 'character', 520, 1130, 2);
       this.player = this.playerController.getPlayer();
     } catch (error) {
       console.error("Error creating PlayerController, falling back to original player:", error);
@@ -87,7 +87,7 @@ export default class MainScene extends Phaser.Scene {
 
     // Controls
     this.cursors = this.input.keyboard.createCursorKeys();
-    this.speed = 300;
+    this.speed = 200;
 
     // Debug text
     this.debugText = this.add
@@ -100,7 +100,7 @@ export default class MainScene extends Phaser.Scene {
 
     // Glowing zones
     this.createGlowArea(630, 870, 60, 40, 0x00ff00);
-    this.createGlowArea(650, 850, 60, 40, 0x00ff00);
+    // this.createGlowArea(650, 850, 60, 40, 0x00ff00);
     this.createGlowArea(955, 875, 20, 10, 0x0000ff);
     this.createGlowArea(585, 665, 50, 10, 0x0000ff);
     this.createGlowArea(1150, 879, 20, 10, 0x0000ff);
@@ -168,6 +168,7 @@ export default class MainScene extends Phaser.Scene {
       
       // Update debug text
       this.debugText.setText(`Player pos: ${Math.round(this.player.x)}, ${Math.round(this.player.y)}`);
+      // console.log(`Player pos: ${Math.round(this.player.x)}, ${Math.round(this.player.y)}`);
       
       // Check for interactions with glowing areas
     } catch (error) {
@@ -348,7 +349,7 @@ export default class MainScene extends Phaser.Scene {
 
   addNpcTrigger(x, y, message){
     const npcZone = this.add.zone(x, y, 50, 50);
-    this.add.rectangle(x, y, 50, 50, 0xff0000, 0.5).setOrigin(0);
+    this.add.rectangle(x, y, 50, 50,).setOrigin(0);
     this.physics.world.enable(npcZone);
     npcZone.body.setAllowGravity(false);
     npcZone.body.moves = false;
