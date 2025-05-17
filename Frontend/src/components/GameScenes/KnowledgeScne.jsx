@@ -7,15 +7,15 @@ export default class KnowledgeScene extends Phaser.Scene {
     // Define the knowledge areas data
     this.knowledgeAreas = [
       { x: 625, y: 1073, topic: "math", id:1, subtopic: "algebra", hardness: "easy" },
-      { x: 300, y: 950, topic: "physics", subtopic: "mechanics", hardness: "medium" },
-      { x: 900, y: 900, topic: "biology", subtopic: "genetics", hardness: "hard" },
-      { x: 500, y: 750, topic: "chemistry", subtopic: "elements", hardness: "medium" },
-      { x: 1100, y: 700, topic: "geography", subtopic: "countries", hardness: "easy" },
-      { x: 800, y: 500, topic: "history", subtopic: "world wars", hardness: "hard" },
-      { x: 400, y: 400, topic: "literature", subtopic: "classics", hardness: "medium" },
-      { x: 1200, y: 300, topic: "programming", subtopic: "algorithms", hardness: "hard" },
-      { x: 600, y: 200, topic: "art", subtopic: "renaissance", hardness: "medium" },
-      { x: 1000, y: 100, topic: "astronomy", subtopic: "planets", hardness: "easy" }
+      { x: 925, y: 1002, topic: "physics", subtopic: "mechanics", hardness: "medium" },
+      { x: 925, y: 827, topic: "biology", subtopic: "genetics", hardness: "hard" },
+      { x: 575, y: 752, topic: "chemistry", subtopic: "elements", hardness: "medium" },
+      { x: 780, y: 612, topic: "geography", subtopic: "countries", hardness: "easy" },
+      { x: 330, y: 332, topic: "history", subtopic: "world wars", hardness: "hard" },
+      { x: 1175, y: 377, topic: "literature", subtopic: "classics", hardness: "medium" },
+      { x: 975, y: 242, topic: "programming", subtopic: "algorithms", hardness: "hard" },
+      { x: 625, y: 197, topic: "art", subtopic: "renaissance", hardness: "medium" },
+      { x: 780, y: 112, topic: "astronomy", subtopic: "planets", hardness: "hard" }
     ];
     
     // Color mapping for hardness levels
@@ -125,7 +125,7 @@ this.physics.add.collider(this.player, this.obstacles);
       // Add text label above the glow area
       const areaText = this.add
         .text(area.x, area.y - 30, 
-          `${area.topic.toUpperCase()}\n${area.hardness}`, {
+          `${area.hardness}`, {
           fontSize: "12px",
           fontFamily: "Arial, sans-serif",
           color: "#ffffff",
@@ -252,135 +252,300 @@ this.physics.add.collider(this.player, this.obstacles);
   }
 
   showChallengeDialog(areaData) {
-    // Get scene dimensions
-    const sceneWidth = this.cameras.main.width - 40;
-    const sceneHeight = this.cameras.main.height - 10;
+  // Get responsive dimensions based on screen size
+  const gameWidth = this.cameras.main.width;
+  const gameHeight = this.cameras.main.height;
+  
+  // Calculate responsive dialog size
+  const dialogWidth = Math.min(gameWidth * 0.85, 600);
+  const dialogHeight = Math.min(gameHeight * 0.2, 200);
+  const dialogX = gameWidth / 2;
+  const dialogY = gameHeight + dialogHeight / 2;
+  const finalY = gameHeight - dialogHeight / 2 - 20;
+  
+  // Add semi-transparent overlay
+  this.overlay = this.add
+    .rectangle(gameWidth / 2, gameHeight / 2, gameWidth, gameHeight, 0x000000, 0.5)
+    .setOrigin(0.5)
+    .setScrollFactor(0)
+    .setDepth(10)
+    .setAlpha(0);
+    
+  // Fade in overlay
+  this.tweens.add({
+    targets: this.overlay,
+    alpha: 1,
+    duration: 200,
+    ease: 'Power2'
+  });
 
-    // Create dialog background
-    this.dialogBg = this.add
-      .rectangle(sceneWidth / 2 + 10, sceneHeight + 75, sceneWidth, 180, 0xffffff, 1)
-      .setOrigin(0.5)
-      .setScrollFactor(0)
-      .setStrokeStyle(2, 0x000000, 1);
+  // Create dialog container group for easier cleanup
+  this.dialogGroup = this.add.group();
+  
+  // Dialog background with rounded corners and gradient
+  const graphics = this.add.graphics().setDepth(15);
+  
+  // Dialog shadow (drawn first)
+  graphics.fillStyle(0x000000, 0.3);
+  graphics.fillRoundedRect(dialogX - dialogWidth / 2 + 8, finalY - dialogHeight / 2 + 8, dialogWidth, dialogHeight, 16);
+  
+  // Main dialog background
+  graphics.fillStyle(0xffffff, 1);
+  graphics.fillRoundedRect(dialogX - dialogWidth / 2, finalY - dialogHeight / 2, dialogWidth, dialogHeight, 16);
+  graphics.lineStyle(2, 0x4a90e2, 1);
+  graphics.strokeRoundedRect(dialogX - dialogWidth / 2, finalY - dialogHeight / 2, dialogWidth, dialogHeight, 16);
+  
+  this.dialogGroup.add(graphics);
+  graphics.setScrollFactor(0);
+  
+  // Create decorative header bar
+  const headerHeight = dialogHeight * 0.2;
+  const headerGraphics = this.add.graphics().setDepth(16);
+  headerGraphics.fillStyle(0x4a90e2, 1);
+  headerGraphics.fillRoundedRect(
+    dialogX - dialogWidth / 2, 
+    finalY - dialogHeight / 2, 
+    dialogWidth, 
+    headerHeight, 
+    { tl: 16, tr: 16, bl: 0, br: 0 }
+  );
+  this.dialogGroup.add(headerGraphics);
+  headerGraphics.setScrollFactor(0);
+  
+  // Header title text
+  const headerTitle = this.add
+    .text(dialogX, finalY - dialogHeight / 2 + headerHeight / 2, "NEW CHALLENGE", {
+      fontFamily: 'Arial, sans-serif',
+      fontSize: Math.max(16, Math.min(24, gameWidth * 0.03)) + 'px',
+      fontWeight: 'bold',
+      color: '#ffffff'
+    })
+    .setDepth(17)
+    .setOrigin(0.5)
+    .setScrollFactor(0);
+  this.dialogGroup.add(headerTitle);
 
-    // Add shadow for floating effect
-    this.dialogShadow = this.add
-      .rectangle(sceneWidth / 2 + 15, sceneHeight + 80, sceneWidth, 180, 0x000000, 0.3)
-      .setOrigin(0.5)
-      .setScrollFactor(0);
-
-    // Move dialog and shadow to final position with animation
-    this.tweens.add({
-      targets: [this.dialogBg, this.dialogShadow],
-      y: sceneHeight - 75,
-      duration: 300,
-      ease: "Power2",
-    });
-
-    // Format the challenge text
-    const challengeText = `Challenge: ${areaData.topic.toUpperCase()} - ${areaData.subtopic} Difficulty: ${areaData.hardness.toUpperCase()}\n\nDo you want to accept this challenge?`;
-
-    // Add dialog text
-    this.dialogText = this.add
-      .text(sceneWidth / 2 + 10, sceneHeight - 125, challengeText, {
-        fontSize: "24px",
-        fontFamily: "Arial, sans-serif",
-        color: "#000000",
-        align: "center",
-        wordWrap: { width: sceneWidth - 200 },
-      })
-      .setOrigin(0.5)
-      .setScrollFactor(0)
-      .setAlpha(0);
-
-    // Animate text fade-in
-    this.tweens.add({
-      targets: this.dialogText,
-      alpha: 1,
-      duration: 300,
-      delay: 200,
-    });
-
-    // Add Yes button (green)
-    this.yesBtn = this.add
-      .text(sceneWidth / 2 - 100, sceneHeight - 45, "Yes", {
-        fontSize: "20px",
-        fontFamily: "Arial, sans-serif",
-        backgroundColor: "#28a745",
-        color: "#ffffff",
-        padding: { x: 20, y: 10 },
-        align: "center",
-        shadow: {
-          offsetX: 2,
-          offsetY: 2,
-          color: "#000000",
-          blur: 4,
-          fill: true,
-        },
-      })
-      .setOrigin(0.5)
-      .setScrollFactor(0)
-      .setInteractive({ useHandCursor: true })
-      .setAlpha(0)
-      .on("pointerdown", () => {
-        this.destroyDialog(); 
-        this.showLearningDialog(areaData);
-      })
-      .on("pointerover", () =>
-        this.yesBtn.setStyle({ backgroundColor: "#218838" })
-      )
-      .on("pointerout", () =>
-        this.yesBtn.setStyle({ backgroundColor: "#28a745" })
-      );
-
-    // Add No button (red)
-    this.noBtn = this.add
-      .text(sceneWidth / 2 + 100, sceneHeight - 45, "No", {
-        fontSize: "20px",
-        fontFamily: "Arial, sans-serif",
-        backgroundColor: "#dc3545",
-        color: "#ffffff",
-        padding: { x: 20, y: 10 },
-        align: "center",
-        shadow: {
-          offsetX: 2,
-          offsetY: 2,
-          color: "#000000",
-          blur: 4,
-          fill: true,
-        },
-      })
-      .setOrigin(0.5)
-      .setScrollFactor(0)
-      .setInteractive({ useHandCursor: true })
-      .setAlpha(0)
-      .on("pointerdown", () => {
-        this.destroyDialog();
-      })
-      .on("pointerover", () =>
-        this.noBtn.setStyle({ backgroundColor: "#c82333" })
-      )
-      .on("pointerout", () =>
-        this.noBtn.setStyle({ backgroundColor: "#dc3545" })
-      );
-
-    // Animate buttons fade-in
-    this.tweens.add({
-      targets: [this.yesBtn, this.noBtn],
-      alpha: 1,
-      duration: 300,
-      delay: 300,
-    });
+  // Challenge details with badge styling
+  const topicBadge = this.add
+    .text(dialogX, finalY - dialogHeight / 4, {
+      fontFamily: 'Arial, sans-serif',
+      fontSize: Math.max(16, Math.min(28, gameWidth * 0.035)) + 'px',
+      fontWeight: 'bold',
+      color: '#ffffff',
+      backgroundColor: '#ff9f43',
+      padding: { x: 0, y: 0 },
+      borderRadius: 0
+    })
+    .setDepth(0)
+    .setOrigin(0)
+    .setScrollFactor(0);
+  this.dialogGroup.add(topicBadge);
+  
+  // Subtopic text
+  const subtopicText = this.add
+    .text(dialogX, finalY - dialogHeight / 4 + topicBadge.height + 8, {
+      fontFamily: 'Arial, sans-serif',
+      fontSize: Math.max(14, Math.min(22, gameWidth * 0.025)) + 'px',
+      color: '#333333'
+    })
+    .setDepth(16)
+    .setOrigin(0.5)
+    .setScrollFactor(0);
+  this.dialogGroup.add(subtopicText);
+  
+  // Difficulty indicator with colored badge
+  let difficultyColor;
+  switch(areaData.hardness.toLowerCase()) {
+    case 'easy': difficultyColor = '#2ecc71'; break;
+    case 'medium': difficultyColor = '#f39c12'; break;
+    default: difficultyColor = '#e74c3c'; break;
   }
-
-  destroyDialog() {
-    // Safely destroy dialog elements if they exist
-    if (this.dialogBg) this.dialogBg.destroy();
-    if (this.dialogShadow) this.dialogShadow.destroy();
-    if (this.dialogText) this.dialogText.destroy();
-    if (this.yesBtn) this.yesBtn.destroy();
-    if (this.noBtn) this.noBtn.destroy();
-  }
+  
+  const difficultyText = this.add
+    .text(dialogX, finalY - dialogHeight / 4 + topicBadge.height + subtopicText.height + 16, 
+      " " + areaData.hardness.toUpperCase(), {
+      fontFamily: 'Arial, sans-serif',
+      fontSize: Math.max(12, Math.min(18, gameWidth * 0.02)) + 'px',
+      fontWeight: 'bold',
+      color: '#ffffff',
+      backgroundColor: difficultyColor,
+      padding: { x: 10, y: 5 },
+      borderRadius: 5
+    })
+    .setDepth(16)
+    .setOrigin(0.5)
+    .setScrollFactor(0);
+  this.dialogGroup.add(difficultyText);
+  
+  // Calculate button sizes and positions based on screen dimensions
+  const buttonWidth = Math.min(dialogWidth * 0.3, 120);
+  const buttonHeight = Math.min(dialogHeight * 0.2, 40);
+  const buttonY = finalY + dialogHeight / 2 - buttonHeight - 15;
+  const buttonSpacing = Math.min(dialogWidth * 0.2, 100);
+  
+  // Accept button with modern styling and hover effects
+  const acceptButtonGraphics = this.add.graphics().setDepth(16);
+  acceptButtonGraphics.fillStyle(0x2ecc71, 1);
+  acceptButtonGraphics.fillRoundedRect(dialogX - buttonSpacing - buttonWidth/2, buttonY, buttonWidth, buttonHeight, 10);
+  this.dialogGroup.add(acceptButtonGraphics);
+  acceptButtonGraphics.setScrollFactor(0);
+  
+  const acceptText = this.add
+    .text(dialogX - buttonSpacing, buttonY + buttonHeight/2, "ACCEPT", {
+      fontFamily: 'Arial, sans-serif',
+      fontSize: Math.max(14, Math.min(18, gameWidth * 0.022)) + 'px',
+      fontWeight: 'bold',
+      color: '#ffffff'
+    })
+    .setDepth(17)
+    .setOrigin(0.5)
+    .setScrollFactor(0)
+    .setInteractive({ useHandCursor: true });
+  this.dialogGroup.add(acceptText);
+  
+  // Decline button
+  const declineButtonGraphics = this.add.graphics().setDepth(16);
+  declineButtonGraphics.fillStyle(0xe74c3c, 1);
+  declineButtonGraphics.fillRoundedRect(dialogX + buttonSpacing - buttonWidth/2, buttonY, buttonWidth, buttonHeight, 10);
+  this.dialogGroup.add(declineButtonGraphics);
+  declineButtonGraphics.setScrollFactor(0);
+  
+  const declineText = this.add
+    .text(dialogX + buttonSpacing, buttonY + buttonHeight/2, "DECLINE", {
+      fontFamily: 'Arial, sans-serif',
+      fontSize: Math.max(14, Math.min(18, gameWidth * 0.022)) + 'px',
+      fontWeight: 'bold',
+      color: '#ffffff'
+    })
+    .setDepth(17)
+    .setOrigin(0.5)
+    .setScrollFactor(0)
+    .setInteractive({ useHandCursor: true });
+  this.dialogGroup.add(declineText);
+  
+  // Set initial positions for animation
+  this.dialogGroup.getChildren().forEach(child => {
+    if (child !== this.overlay) {
+      child.y += dialogHeight + 50;
+    }
+  });
+  
+  // Create a collective tween for all dialog elements
+  this.tweens.add({
+    targets: this.dialogGroup.getChildren().filter(child => child !== this.overlay),
+    y: '-=' + (dialogHeight + 50),
+    duration: 500,
+    ease: 'Back.easeOut',
+    delay: 200
+  });
+  
+  // Button hover effects
+  acceptText.on('pointerover', () => {
+    acceptButtonGraphics.clear();
+    acceptButtonGraphics.fillStyle(0x27ae60, 1); // Darker green on hover
+    acceptButtonGraphics.fillRoundedRect(dialogX - buttonSpacing - buttonWidth/2, buttonY, buttonWidth, buttonHeight, 10);
+    this.tweens.add({
+      targets: acceptText,
+      scaleX: 1.05,
+      scaleY: 1.05,
+      duration: 100
+    });
+  });
+  
+  acceptText.on('pointerout', () => {
+    acceptButtonGraphics.clear();
+    acceptButtonGraphics.fillStyle(0x2ecc71, 1); // Original green
+    acceptButtonGraphics.fillRoundedRect(dialogX - buttonSpacing - buttonWidth/2, buttonY, buttonWidth, buttonHeight, 10);
+    this.tweens.add({
+      targets: acceptText,
+      scaleX: 1,
+      scaleY: 1,
+      duration: 100
+    });
+  });
+  
+  declineText.on('pointerover', () => {
+    declineButtonGraphics.clear();
+    declineButtonGraphics.fillStyle(0xc0392b, 1); // Darker red on hover
+    declineButtonGraphics.fillRoundedRect(dialogX + buttonSpacing - buttonWidth/2, buttonY, buttonWidth, buttonHeight, 10);
+    this.tweens.add({
+      targets: declineText,
+      scaleX: 1.05,
+      scaleY: 1.05,
+      duration: 100
+    });
+  });
+  
+  declineText.on('pointerout', () => {
+    declineButtonGraphics.clear();
+    declineButtonGraphics.fillStyle(0xe74c3c, 1); // Original red
+    declineButtonGraphics.fillRoundedRect(dialogX + buttonSpacing - buttonWidth/2, buttonY, buttonWidth, buttonHeight, 10);
+    this.tweens.add({
+      targets: declineText,
+      scaleX: 1,
+      scaleY: 1,
+      duration: 100
+    });
+  });
+  
+  // Setup button click events
+  acceptText.on('pointerdown', () => {
+    this.destroyDialog();
+    this.showLearningDialog(areaData);
+  });
+  
+  declineText.on('pointerdown', () => {
+    this.destroyDialog();
+  });
+  
+  // Method to destroy dialog with animation
+  this.destroyDialog = () => {
+    // Animate dialog out
+    this.tweens.add({
+      targets: this.dialogGroup.getChildren().filter(child => child !== this.overlay),
+      y: '+=' + (dialogHeight + 50),
+      alpha: 0,
+      duration: 300,
+      ease: 'Back.easeIn'
+    });
+    
+    // Fade out overlay
+    this.tweens.add({
+      targets: this.overlay,
+      alpha: 0,
+      duration: 300,
+      onComplete: () => {
+        // Destroy all dialog elements
+        this.dialogGroup.clear(true, true);
+        this.overlay.destroy();
+      }
+    });
+  };
+  
+  // Handle window resize for responsiveness
+  const resizeListener = () => {
+    this.destroyDialog();
+    this.showChallengeDialog(areaData);
+  };
+  
+  // Listen for resize events while dialog is active
+  window.addEventListener('resize', resizeListener);
+  
+  // Make sure to remove listener when dialog is destroyed
+  const originalDestroyDialog = this.destroyDialog;
+  this.destroyDialog = () => {
+    window.removeEventListener('resize', resizeListener);
+    originalDestroyDialog();
+  };
+}
+  // destroyDialog() {
+  //   // Safely destroy dialog elements if they exist
+  //   if (this.dialogBg) this.dialogBg.destroy();
+  //   if (this.dialogShadow) this.dialogShadow.destroy();
+  //   if (this.dialogText) this.dialogText.destroy();
+  //   if (this.yesBtn) this.yesBtn.destroy();
+  //   if (this.noBtn) this.noBtn.destroy();
+  // }
 
   showLearningDialog(areaData) {
     const playerPos = { x: this.player.x, y: this.player.y };

@@ -48,8 +48,8 @@ export default class GymScene extends Phaser.Scene {
       this.playerController = new PlayerController(
         this,
         "character",
-        675,
-        950,
+        808,
+        1095,
         4
       );
       this.player = this.playerController.getPlayer();
