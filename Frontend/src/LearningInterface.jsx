@@ -13,7 +13,7 @@ const sampleLesson = {
     "Key Point 1: Learning is a continuous journey.",
     "Key Point 2: Asking questions helps deepen understanding.",
     "Key Point 3: Making notes improves retention.",
-  ],
+  ],  
   funFacts: [
     "Did you know? The brain can process images in as little as 13 milliseconds!",
     "Fun Fact: Taking short notes boosts memory by 30%.",
