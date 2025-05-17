@@ -1,3 +1,4 @@
+
 import ObstacleManager from "../utils/ObstracleManager";
 import NavigationController from "../Routes/NavigationController";
 import sceneManager from "../utils/SceneManager";
@@ -5,6 +6,8 @@ import sceneManager from "../utils/SceneManager";
 export default class MainScene extends Phaser.Scene {
   constructor() {
     super("MainScene");
+    this.trainingSpots = [];
+    this.inTrainingCooldown = false;
   }
 
   preload() {
@@ -52,6 +55,7 @@ export default class MainScene extends Phaser.Scene {
     this.createGlowArea(650, 850, 60, 40, 0x00ff00);
     this.createGlowArea(955, 875, 20, 10, 0x0000ff);
     this.createGlowArea(585, 665, 50, 10, 0x0000ff);
+    this.createGlowArea(1150, 879, 20, 10, 0x0000ff);
 
     this.navController = new NavigationController(this);
 
@@ -77,8 +81,29 @@ export default class MainScene extends Phaser.Scene {
       }
     });
 
-    this.addNpcTrigger(500, 300, "Welcome, hero! Be careful ahead.");
-    this.addNpcTrigger(800, 500, "I once saw a monster around here...");
+    this.addNpcTrigger(1065, 523, "Welcome, hero! Be careful ahead.");
+    this.addNpcTrigger(790, 555, "I once saw a monster around here...");
+    this.addNpcTrigger(1190, 655, "I once saw a monster around here...");
+
+    // Define grass regions - you may need to adjust these based on your actual map
+    this.grassRegions = [
+      { x: 940, y: 608, width: 300, height: 190 },  // Main grass field
+      { x: 215, y: 720, width: 120, height: 120 },  // Small grass patch
+      { x: 345, y: 291, width: 300, height: 100 },  // Right side grass
+      { x: 845, y: 280, width: 500, height: 100 },  // Right side grass
+      { x: 1200, y: 380, width: 200, height: 500 }  // Right side grass
+    ];
+    
+    // Generate random training spots in grass regions
+    this.generateTrainingSpots();
+    
+    // Generate new training spots every 30 seconds
+    this.time.addEvent({
+      delay: 30000,
+      callback: this.generateTrainingSpots,
+      callbackScope: this,
+      loop: true
+    });
   }
 
   update() {
@@ -105,6 +130,20 @@ export default class MainScene extends Phaser.Scene {
 
     if (this.isInArea(585, 665, 50, 10)) {
       sceneManager.navigateToScene(this, "GymScene");
+    }
+
+    if(this.isInArea(1150, 879, 20, 10)) {
+      sceneManager.navigateToScene(this, "TournamentScene");
+    }
+
+    // Check if player is in any training spot
+    if (!this.inTrainingCooldown) {
+      for (const spot of this.trainingSpots) {
+        if (this.isInArea(spot.x, spot.y, spot.width, spot.height)) {
+          this.startTrainingChallenge();
+          break;
+        }
+      }
     }
 
     // NPC interaction
@@ -254,5 +293,242 @@ export default class MainScene extends Phaser.Scene {
     this.npcDialogBg?.destroy();
     this.npcDialogShadow?.destroy();
     this.npcDialogText?.destroy();
+  }
+
+  // Generate random training spots in grass regions
+  generateTrainingSpots() {
+    // Clear existing training spots
+    this.trainingSpots.forEach(spot => {
+      if (spot.rectangle) {
+        spot.rectangle.destroy();
+      }
+    });
+    this.trainingSpots = [];
+
+    // Generate new training spots
+    this.grassRegions.forEach(region => {
+      // Define how many spots to create (30% coverage)
+      const area = region.width * region.height;
+      const spotSize = 30; // Size of each training spot
+      const spotArea = spotSize * spotSize;
+      const totalSpots = Math.floor((area * 0.3) / spotArea);
+      
+      for (let i = 0; i < totalSpots; i++) {
+        // Generate random position within the region
+        const x = region.x + Math.floor(Math.random() * (region.width - spotSize));
+        const y = region.y + Math.floor(Math.random() * (region.height - spotSize));
+        
+        // Create a green rectangle for debugging
+        const rectangle = this.add.rectangle(x, y, spotSize, spotSize, 0x00ff00, 0.4)
+          .setOrigin(0)
+          .setStrokeStyle(1, 0x00ff00, 1);
+          
+        // Add pulsing effect for visibility
+        this.tweens.add({
+          targets: rectangle,
+          alpha: { from: 0.2, to: 0.6 },
+          duration: 1000,
+          yoyo: true,
+          repeat: -1,
+        });
+        
+        // Add to training spots array
+        this.trainingSpots.push({
+          x,
+          y,
+          width: spotSize,
+          height: spotSize,
+          rectangle
+        });
+      }
+    });
+    
+    console.log(`Generated ${this.trainingSpots.length} training spots`);
+  }
+
+  // Start a training challenge when player enters a training spot
+  startTrainingChallenge() {
+    if (this.inTrainingCooldown) return;
+    
+    // Set cooldown to prevent multiple triggers
+    this.inTrainingCooldown = true;
+    
+    // Pause player movement
+    const currentVelocity = { x: this.player.body.velocity.x, y: this.player.body.velocity.y };
+    this.player.setVelocity(0, 0);
+    
+    // Show question dialog
+    this.showQuestionDialog();
+    
+    // Set cooldown timer (prevent multiple triggers in succession)
+    this.time.delayedCall(5000, () => {
+      this.inTrainingCooldown = false;
+    });
+  }
+  
+  showQuestionDialog() {
+    // Clear any existing dialogs
+    this.destroyDialog();
+    
+    // Get a random question
+    const question = this.getRandomQuestion();
+    
+    const sceneWidth = this.cameras.main.width;
+    const sceneHeight = this.cameras.main.height;
+    
+    // Create dialog background
+    this.dialogShadow = this.add
+      .rectangle(
+        sceneWidth / 2 + 5,
+        sceneHeight / 2 + 5,
+        500,
+        300,
+        0x000000,
+        0.5
+      )
+      .setOrigin(0.5)
+      .setScrollFactor(0);
+      
+    this.dialogBg = this.add
+      .rectangle(
+        sceneWidth / 2,
+        sceneHeight / 2,
+        500,
+        300,
+        0xffffff,
+        0.9
+      )
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setStrokeStyle(2, 0x000000, 1);
+      
+    // Add question text
+    this.dialogText = this.add
+      .text(
+        sceneWidth / 2,
+        sceneHeight / 2 - 60,
+        `TRAINING CHALLENGE:\n\n${question.text}`,
+        {
+          fontSize: "24px",
+          fontFamily: "Arial",
+          color: "#000000",
+          align: "center",
+          wordWrap: { width: 450 }
+        }
+      )
+      .setOrigin(0.5)
+      .setScrollFactor(0);
+      
+    // Add answer buttons
+    this.yesBtn = this.add
+      .text(
+        sceneWidth / 2 - 100,
+        sceneHeight / 2 + 80,
+        question.options[0],
+        {
+          fontSize: "20px",
+          fontFamily: "Arial",
+          color: "#ffffff",
+          backgroundColor: "#2196f3",
+          padding: {
+            left: 20,
+            right: 20,
+            top: 10,
+            bottom: 10
+          }
+        }
+      )
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setInteractive({ useHandCursor: true });
+      
+    this.noBtn = this.add
+      .text(
+        sceneWidth / 2 + 100,
+        sceneHeight / 2 + 80,
+        question.options[1],
+        {
+          fontSize: "20px",
+          fontFamily: "Arial",
+          color: "#ffffff",
+          backgroundColor: "#2196f3",
+          padding: {
+            left: 20,
+            right: 20,
+            top: 10,
+            bottom: 10
+          }
+        }
+      )
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setInteractive({ useHandCursor: true });
+      
+    // Add button event listeners
+    this.yesBtn.on("pointerup", () => {
+      if (question.answer === 0) {
+        this.handleCorrectAnswer();
+      } else {
+        this.handleWrongAnswer();
+      }
+    });
+    
+    this.noBtn.on("pointerup", () => {
+      if (question.answer === 1) {
+        this.handleCorrectAnswer();
+      } else {
+        this.handleWrongAnswer();
+      }
+    });
+  }
+  
+  handleCorrectAnswer() {
+    this.destroyDialog();
+    
+    // Show success message
+    this.showNpcDialog("Correct answer! You gained 10 XP.");
+    
+    // Here you would add XP to the player or trigger other rewards
+    // For example: this.player.addXP(10);
+  }
+  
+  handleWrongAnswer() {
+    this.destroyDialog();
+    
+    // Show failure message
+    this.showNpcDialog("That's not correct. Try again next time!");
+  }
+  
+  getRandomQuestion() {
+    // Sample questions - you can expand this list
+    const questions = [
+      {
+        text: "Is Phaser a JavaScript game framework?",
+        options: ["Yes", "No"],
+        answer: 0
+      },
+      {
+        text: "Does HTML5 support canvas element?",
+        options: ["Yes", "No"],
+        answer: 0
+      },
+      {
+        text: "Is 2 + 2 = 5?",
+        options: ["Yes", "No"],
+        answer: 1
+      },
+      {
+        text: "Is JavaScript a compiled language?",
+        options: ["Yes", "No"],
+        answer: 1
+      },
+      {
+        text: "Can Phaser create 3D games?",
+        options: ["Yes", "No"],
+        answer: 1
+      }
+    ];
+    
+    return questions[Math.floor(Math.random() * questions.length)];
   }
 }
