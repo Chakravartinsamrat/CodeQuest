@@ -10,7 +10,7 @@ export default function GruntInterface({ topic, level, onClose, npcID, xpgained 
   const [conversation, setConversation] = useState([
     { speaker: 'opponent', text: 'Challenge activated! Prepare yourself, warrior!' }
   ]);
-  const [userInput, setUserInput] = useState('');
+  const [userInput, setUserInput] = useState(''); 
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0); 
   const [challengeComplete, setChallengeComplete] = useState(false);
