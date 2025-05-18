@@ -15,19 +15,19 @@ export default class ArcadeHome extends Phaser.Scene {
     });
   }
   create() {
-    const bg = this.add.image(200, 0, "Aracde").setOrigin(0);
+    const bg = this.add.image(80, 20, "Aracde").setOrigin(0);
     bg.setDisplaySize(1600, 1000);
 
     this.physics.world.setBounds(200, 0, 1600, 1000);
     this.cameras.main.setBounds(0, 0, 1600, 1000);
-    this.cameras.main.setZoom(0.6);
+    // this.cameras.main.setZoom(1.1);
 
     try {
       this.playerController = new PlayerController(
         this,
         "character",
-        675,
-        950,
+        930,
+        875,
         4
       );
       this.player = this.playerController.getPlayer();
@@ -45,13 +45,13 @@ export default class ArcadeHome extends Phaser.Scene {
     this.cursors = this.input.keyboard.createCursorKeys();
     this.speed = 300;
 
-    // this.debugText = this.add
-    //   .text(10, 10, "Use arrow keys to move", {
-    //     fontSize: "16px",
-    //     fill: "#ffffff",
-    //     backgroundColor: "#000000",
-    //   })
-    //   .setScrollFactor(0);
+    this.debugText = this.add
+      .text(10, 10, "Use arrow keys to move", {
+        fontSize: "16px",
+        fill: "#ffffff",
+        backgroundColor: "#000000",
+      })
+      .setScrollFactor(0);
 
     // Define the interactive areas
     this.interactiveAreas = [
@@ -99,11 +99,11 @@ export default class ArcadeHome extends Phaser.Scene {
       }
 
       // Update debug text
-      // this.debugText.setText(
-      //   `Player pos: ${Math.round(this.player.x)}, ${Math.round(this.player.y)}`
-      // );
-      // console.log(`Player pos: ${Math.round(this.player.x)}, ${Math.round(this.player.y)}`
-// )
+      this.debugText.setText(
+        `Player pos: ${Math.round(this.player.x)}, ${Math.round(this.player.y)}`
+      );
+      console.log(`Player pos: ${Math.round(this.player.x)}, ${Math.round(this.player.y)}`
+)
     } catch (error) {
       console.error("Error in update:", error);
     }

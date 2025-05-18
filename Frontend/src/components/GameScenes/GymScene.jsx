@@ -35,19 +35,21 @@ export default class GymScene extends Phaser.Scene {
   }
 
   create() {
-    const bg = this.add.image(0, 0, "Gym-Arena.webp").setOrigin(0);
-    bg.setDisplaySize(1600, 1200);
 
-    this.physics.world.setBounds(0, 0, 1600, 1200);
-    this.cameras.main.setBounds(0, 0, 1600, 1200);
+      const bg = this.add.image(0, 0, "Gym-Arena.webp").setOrigin(0);
+      bg.setDisplaySize(1600, 1200);
+
+      this.physics.world.setBounds(0, 0, 1600, 1200);
+      this.cameras.main.setBounds(0, 0, 1600, 1200);
+
 
     // Add player
     try {
       this.playerController = new PlayerController(
         this,
         "character",
-        675,
-        950,
+        813,
+        1050,
         4
       );
       this.player = this.playerController.getPlayer();
@@ -99,36 +101,40 @@ export default class GymScene extends Phaser.Scene {
     
     // Create obstacles
     this.obstacles = this.physics.add.staticGroup();
-    this.createObstacleRect(800, 720, 672, 25); //middle border
-    this.createObstacleRect(1237, 950, 542, 25); //right below border
-    this.createObstacleRect(1298, 900, 330, 50); //right above border
-    this.createObstacleRect(370, 950, 542, 25); //left bottom border
-    this.createObstacleRect(290, 905, 330, 50); //left above border
-    this.createObstacleRect(440, 465, 680, 50); 
+    this.createObstacleRect(800, 720, 672, 25, 0xff0000); //middle border
+    this.createObstacleRect(1237, 950, 542, 25, 0xff0000); //right below border
+    this.createObstacleRect(117, 476, 1630, 10, 0xff0000); //right above border
+    this.createObstacleRect(370, 950, 542, 25, 0xff0000); //left bottom border
+    this.createObstacleRect(290, 905, 330, 50, 0xff0000); //left above border
 
-	// this.createObstacleRect(460, 720,672,25);
-    // this.createObstacleRect(947, 950,542,25);
-    // this.createObstacleRect(1158, 900,330,50);
-    // this.createObstacleRect(100, 950,542,25);
-    // this.createObstacleRect(100, 900,330,50);
-    // this.createObstacleRect(100, 465,680,50);
-    
-    // Add collision between player and obstacles
+    this.createObstacleRect(50, 122, 100, 2150, 0xd5b57a, true); //color only needed of this obstacle
+    this.createObstacleRect(132, 22, 3050, 100, 0xd5b57a, true); //color only needed of this obstacle
+    this.createObstacleRect(132, 1183, 3050, 50, 0xd5b57a, true); //color only needed of this obstacle
+    this.createObstacleRect(1550, 48,100 ,3050, 0xd5b57a, true); //color only needed of this obstacle
+    this.createObstacleRect(1150, 68 ,900, 340 , 0xd5b57a, true); //color only needed of this obstacle
+
+  
     this.physics.add.collider(this.player, this.obstacles);
   }
 
-  createObstacleRect(x, y, width, height) {
-    // Create an invisible rectangle as an obstacle
-    const obstacle = this.add.rectangle(x, y, width, height, 0xff0000, 0.0);
-    this.obstacles.add(obstacle);
-    
-    // Enable debug visualization if needed (uncomment for debugging)
-    // const debugGraphics = this.add.graphics().setAlpha(0.3);
-    // debugGraphics.fillStyle(0xff0000);
-    // debugGraphics.fillRect(x - width/2, y - height/2, width, height);
-    
-    return obstacle;
+  createObstacleRect(x, y, width, height, color, showVisual = false) {
+  // Create the rectangle shape
+  const rect = this.add.rectangle(x, y, width, height);
+  
+  // Enable it as a static physics body
+  this.physics.add.existing(rect, true); // 'true' makes it static
+  this.obstacles.add(rect);
+
+  // Only draw it visually if needed
+  if (showVisual) {
+    const graphics = this.add.graphics();
+    graphics.fillStyle(color, 1);
+    graphics.fillRect(x - width / 2, y - height / 2, width, height);
   }
+
+  return rect;
+}
+
 
   setupNPCs() {
     // Create an array to store our NPCs and their interaction areas
