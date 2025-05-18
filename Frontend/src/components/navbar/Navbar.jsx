@@ -1,14 +1,20 @@
-// src/components/Navbar.jsx
 import { Link } from 'react-router-dom';
 import AuthButton from './icon';
 import { useUser } from '@clerk/clerk-react';
 import { UserButton } from "@clerk/clerk-react";
-
-
+import { useEffect } from 'react';
 
 export default function Navbar() {
-  const {user} = useUser()
-  console.log(user)
+  const { user } = useUser();
+  
+  // Store user email in localStorage when user data is available
+  useEffect(() => {
+    if (user && user.primaryEmailAddress) {
+      localStorage.setItem('userEmail', user.primaryEmailAddress.emailAddress);
+      console.log('User email stored in localStorage:', user.primaryEmailAddress.emailAddress);
+    }
+  }, [user]);
+
   return (
     <nav className="flex items-center justify-between px-6 py-3 bg-[#050519] text-white shadow-md">
       {/* Left - Logo */}
@@ -24,15 +30,17 @@ export default function Navbar() {
         <Link to="/game" className="hover:text-yellow-300">Community</Link>
       </div>
 
-      {/* Right - Signup */}
-      {/* <span>{user.primaryEmailAddress?.emailAddress}</span> */}
-     <div className="flex items-center gap-4">
-        <Link to="/profile" className="text-blue-600 hover:underline">Profile</Link>
+      {/* Right - Profile and Auth */}
+      <div className="flex items-center gap-4">
+        {user && (
+          <>
+            <span className="text-sm text-gray-300">{user.primaryEmailAddress?.emailAddress}</span>
+            <Link to="/profile" className="text-blue-600 hover:underline">Profile</Link>
+          </>
+        )}
         <UserButton afterSignOutUrl="/" />
-
-        {user? <></> : <AuthButton/>}
+        {!user && <AuthButton />}
       </div>
-
     </nav>
   );
 }

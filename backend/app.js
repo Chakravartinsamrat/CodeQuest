@@ -93,6 +93,7 @@ function calculateLevel(xp) {
 app.post("/update-xp", async (req, res) => {
   try {
     const { useremail, xpgained, npcID } = req.body;
+    console.log("inside update server call")
 
     if (!useremail || !xpgained || !npcID) {
       return res.status(400).json({ error: "Missing required query parameters." });
