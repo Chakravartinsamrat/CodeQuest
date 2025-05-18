@@ -12,3 +12,6 @@ phaser.js?v=26fec2c5:3475 Uncaught TypeError: Cannot read properties of undefine
 Make Snake game in React using Phaser.js as a reusable component
 Use Export default SnakeScene extends Phaser.Scene
 to export the game itself
+
+
+

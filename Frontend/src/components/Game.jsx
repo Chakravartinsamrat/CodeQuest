@@ -70,7 +70,7 @@ const Game = ({ w, h, isFullscreen }) => {
       gameInstanceRef.current.scene.add('TournamentScene', TournamentScene);
       gameInstanceRef.current.scene.add('GymScene', GymScene);
       gameInstanceRef.current.scene.add('ArcadeScene', ArcadeHome);
-      gameInstanceRef.current.scene.add('DinoScene', DinoGameScene)
+      gameInstanceRef.current.scene.add('DinoGameScene', DinoGameScene)
       gameInstanceRef.current.scene.add('TetrisScene', TetrisScene)
       gameInstanceRef.current.scene.add('SnakeGame', SnakeScene)
 

@@ -27,20 +27,20 @@ export default class ObstacleManager {
   }
   
   createBorderRect(x, y, width, height) {
-    const rect = this.scene.add.rectangle(x, y, width, height, 0xFF0000, 0.5); // red fill
+    const rect = this.scene.add.rectangle(x, y, width, height); // red fill
     rect.setOrigin(0, 0);
     this.obstacles.add(rect, true);
   }
   
   createObstacleRect(x, y, width, height) {
     // Create the filled rectangle (semi-transparent)
-    const fillRect = this.scene.add.rectangle(x, y, width, height, 0x000000, 0.3);
+    const fillRect = this.scene.add.rectangle(x, y, width, height);
     fillRect.setOrigin(0, 0);
     
     // Create the red border (stroke)
     const borderRect = this.scene.add.rectangle(x, y, width, height);
     borderRect.setOrigin(0, 0);
-    borderRect.setStrokeStyle(4, 0xFF0000);
+    // borderRect.setStrokeStyle(4, 0xFF0000);
     
     // Add only the fill rectangle to the physics group (for collision)
     this.obstacles.add(fillRect, true);
