@@ -25,6 +25,17 @@ export default function CoursesSection() {
         desc: "Query, manipulate, and understand relational databases using SQL.",
         img: "https://images.pexels.com/photos/31701241/pexels-photo-31701241/free-photo-of-colorful-pink-and-beige-mediterranean-architecture.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
       },
+      {
+        title: "Math",
+        desc: "Master numbers, logic, and problem-solving across algebra, geometry, and more.",
+        img: "https://images.pexels.com/photos/256369/pexels-photo-256369.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+      },
+      {
+        title: "Physics",
+        desc: "Explore the laws of nature, motion, energy, and the universe around us.",
+        img: "https://images.pexels.com/photos/2563697/pexels-photo-2563697.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+      }
+      
     ];
   
     return (
