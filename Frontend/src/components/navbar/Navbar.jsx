@@ -1,9 +1,14 @@
 // src/components/Navbar.jsx
 import { Link } from 'react-router-dom';
 import AuthButton from './icon';
+import { useUser } from '@clerk/clerk-react';
+import { UserButton } from "@clerk/clerk-react";
+
 
 
 export default function Navbar() {
+  const {user} = useUser()
+  console.log(user)
   return (
     <nav className="flex items-center justify-between px-6 py-3 bg-[#050519] text-white shadow-md">
       {/* Left - Logo */}
@@ -20,7 +25,14 @@ export default function Navbar() {
       </div>
 
       {/* Right - Signup */}
-      <AuthButton/>
+      {/* <span>{user.primaryEmailAddress?.emailAddress}</span> */}
+     <div className="flex items-center gap-4">
+        <Link to="/profile" className="text-blue-600 hover:underline">Profile</Link>
+        <UserButton afterSignOutUrl="/" />
+
+        {user? <></> : <AuthButton/>}
+      </div>
+
     </nav>
   );
 }
