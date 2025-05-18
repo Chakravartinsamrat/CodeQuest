@@ -73,13 +73,15 @@ window.showGymInterface = ({ topic, level }) => {
     />
   );
 };
-window.showGruntInterface = ({ topic, level }) => {
+window.showGruntInterface = ({ topic, level, npcID, xpgained }) => {  // Change npcId to npcID
   const challengeReactRoot = createRoot(challengeRoot);
-
+  console.log("topic, level, npcID, xpgained: ", topic, level, npcID, xpgained)  // Change npcId to npcID
   challengeReactRoot.render(
     <GruntInterface
       topic={topic}
       level={level}
+      npcID={npcID}  // This was already correct
+      xpgained={xpgained}
       onClose={() => {
         challengeReactRoot.unmount();
         const game = window.game;

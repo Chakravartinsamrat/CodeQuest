@@ -1,10 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { questions as generateQuestions } from './components/Ai/Generate/generateQuote';
 import { AnswerAnalyiser } from './components/Ai/Generate/AnalyseAnswer.js';
+import axios from 'axios';
+import { useUser } from '@clerk/clerk-react';
 
-export default function GruntInterface({ topic, level, onClose, npcID, xpgained }) {
+export default function GruntInterface({ topic, level,npcID,xpgained, onClose }) {
   console.log("topic in challenge interface", topic);
   console.log("NPC ID:", npcID, "XP to be gained:", xpgained);
+  
   
   // State variables
   const [conversation, setConversation] = useState([
@@ -246,7 +249,6 @@ export default function GruntInterface({ topic, level, onClose, npcID, xpgained 
 
   const handleSubmit = async () => {
     if (!userInput.trim() || isLoading || questions.length === 0) return;
-    
     addMessage('user', userInput);
     const currentQ = questions[currentQuestion];
     
@@ -261,6 +263,14 @@ export default function GruntInterface({ topic, level, onClose, npcID, xpgained 
       );
       
       isCorrect = analysisResult === "YES";
+      if(isCorrect){
+        try {
+          const response = await axios.post("http://localhost:3000/update-xp", { useremail: "userEmail", xpgained:"10", npcID:"jksdkjf" })
+          console.log(response)
+        } catch (error) {
+          console.log(error)
+        }
+      }
     } catch (error) {
       console.error("Error analyzing answer:", error);
       // Fallback to exact match in case of API error

@@ -136,10 +136,10 @@ export default class GymScene extends Phaser.Scene {
 
     // Define NPC positions - placed in different corners of the gym
     const npcPositions = [
-      { x: 775, y: 995, level: 1, topic: "basics", npcID: "NPC001", xpgained: "15" }, // Original grunt position
+      { x: 775, y: 995, level: 1, topic: "basics", npcID: "NPC001", xpgained: "10" }, // Original grunt position
       { x: 1175, y: 815, level: 2, topic: "intermediate", npcID: "NPC002", xpgained: "20" },
-      { x: 425, y: 825, level: 3, topic: "advanced", npcID: "NPC003", xpgained: "25" },
-      { x: 680, y: 370, level: 4, topic: "expert", npcID: "NPC004", xpgained: "30" }
+      { x: 425, y: 825, level: 3, topic: "advanced", npcID: "NPC003", xpgained: "30" },
+      { x: 680, y: 370, level: 4, topic: "expert", npcID: "NPC004", xpgained: "40" }
     ];
 
     // Create NPCs and their interaction areas
@@ -176,13 +176,15 @@ export default class GymScene extends Phaser.Scene {
         })
         .setOrigin(0.5);
 
-      // Store NPC data for interaction checking
+      // Store NPC data for interaction checking - NOW INCLUDING npcID
       this.npcAreas.push({
         npc,
         glowArea,
         levelText,
         level: pos.level,
-        topic: pos.topic || this.gameId // Use provided topic or fall back to gameId
+        topic: pos.topic || this.gameId, // Use provided topic or fall back to gameId
+        npcID: pos.npcID, // ADD THIS LINE - store the npcID
+        xpgained: pos.xpgained // Optional: also store xpgained if needed
       });
     });
   }
@@ -232,11 +234,13 @@ export default class GymScene extends Phaser.Scene {
       else {
         for (let i = 0; i < this.npcAreas.length; i++) {
           const npcData = this.npcAreas[i];
+          console.log("NPC Data:", npcData); // This should now show npcID
           if (Phaser.Geom.Rectangle.Overlaps(
             npcData.glowArea.getBounds(),
             this.player.getBounds()
           )) {
-            this.showChallengeDialog("grunt", npcData.level, npcData.topic);
+            // Pass npcID to the dialog function
+            this.showChallengeDialog("grunt", npcData.level, npcData.topic, npcData.npcID, npcData.xpgained);
             break; // Exit loop once we've found an overlap
           }
         }
@@ -244,7 +248,7 @@ export default class GymScene extends Phaser.Scene {
     }
   }
 
-  showChallengeDialog(type, level = 1, topic = null) {
+  showChallengeDialog(type, level = 1, topic = null, npcID = null, xpgained=null) {
     // Get scene dimensions
     const sceneWidth = this.cameras.main.width - 40;
     const sceneHeight = this.cameras.main.height - 10; // Position 10px from bottom
@@ -336,7 +340,8 @@ export default class GymScene extends Phaser.Scene {
         if (type === "gym") {
           this.showGymInterface();
         } else {
-          this.showGruntInterface(level, topic);
+          // Pass npcID to the grunt interface
+          this.launchGruntInterface(level, topic, npcID, xpgained);
         }
       })
       .on("pointerover", () =>
@@ -416,18 +421,22 @@ export default class GymScene extends Phaser.Scene {
     }
   }
 
-  showGruntInterface(level, topic) {
+  launchGruntInterface(level, topic, npcID, xpgained) {
     // Store player position for later use
     const playerPos = { x: this.player.x, y: this.player.y };
     this.game.registry.set("playerPos", playerPos);
     
-    // Directly show the Grunt interface
+    // Directly show the Grunt interface with npcID
     if (window.showGruntInterface) {
       console.log("Starting grunt battle with level:", level);
       console.log("Topic:", topic || this.gameId);
+      console.log("NPC ID:", npcID); // This should now log the correct npcID
+      console.log("NPC xpgained: ", xpgained)
       window.showGruntInterface({ 
         topic: window.gameId,
-        level: level 
+        level: level,
+        npcID: npcID, // Pass the npcID to the React interface
+        xpgained: xpgained
       });
     } else {
       console.error("React Grunt Interface not available");
