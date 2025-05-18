@@ -51,6 +51,32 @@ export default function CoursesSection() {
         {/* Course Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 max-w-6xl mx-auto">
           {courses.map((course, index) => (
+            (course.title=="DSA"?
+              <div
+              key={index}
+              className="bg-[#181c2f] rounded-3xl overflow-hidden shadow-md hover:shadow-[0_12px_40px_rgba(0,255,120,0.2)] hover:scale-[1.03] transition-all duration-300 ease-in-out"
+            >
+              <img
+                src={course.img}
+                alt={course.title}
+                className="w-full h-48 object-cover brightness-90 hover:brightness-100 transition"
+              />
+              <a href={`http://localhost:8080/`} className="block hover:no-underline">
+                <div className="p-6 text-left hover:bg-[#20243a] transition-colors duration-300 rounded-b-3xl">
+                  <h4 className="text-xs text-green-400 uppercase mb-1 tracking-widest">Course</h4>
+                  <h3 className="text-2xl font-bold mb-2">{course.title}</h3>
+                  <p className="text-gray-300 text-sm leading-relaxed">{course.desc}</p>
+  
+                  <div className="flex items-center justify-between mt-5">
+                    <span className="text-xs bg-green-600/20 text-green-300 px-3 py-1 rounded-full font-medium">
+                      🟢 Beginner Friendly
+                    </span>
+                    <span className="text-xs text-yellow-400 font-semibold hover:underline transition">Start Course →</span>
+                  </div>
+                </div>
+              </a>
+            </div>
+            :
             <div
               key={index}
               className="bg-[#181c2f] rounded-3xl overflow-hidden shadow-md hover:shadow-[0_12px_40px_rgba(0,255,120,0.2)] hover:scale-[1.03] transition-all duration-300 ease-in-out"
@@ -75,6 +101,7 @@ export default function CoursesSection() {
                 </div>
               </a>
             </div>
+            )
           ))}
         </div>
       </section>

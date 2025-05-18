@@ -32,9 +32,17 @@ export default class GymScene extends Phaser.Scene {
         frameHeight: 24, 
       }
     );
+    this.load.audio('BattleMusic', '/BattleScene.mp3');
   }
 
   create() {
+    this.sound.stopAll();
+    const music = this.sound.add('BattleMusic', {
+      loop: true,  // optional: loop music
+      volume: 0.5  // optional: control volume
+    });
+
+    music.play();
 
       const bg = this.add.image(0, 0, "Gym-Arena.webp").setOrigin(0);
       bg.setDisplaySize(1600, 1200);

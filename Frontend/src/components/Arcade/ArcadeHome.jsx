@@ -55,9 +55,9 @@ export default class ArcadeHome extends Phaser.Scene {
 
     // Define the interactive areas
     this.interactiveAreas = [
-      { x: 867, y: 467, width: 60, height: 40, color: 0x00ff00, scene: "TetrisScene" },
-      { x: 1138, y: 667, width: 60, height: 40, color: 0x00ff00, scene: "DinoGameScene" },
-      { x: 1675, y: 402, width: 60, height: 40, color: 0x00ff00, scene: "SnakeGame" },
+      { x: 725, y: 415, width: 60, height: 40, color: 0x00ff00, scene: "TetrisScene" },
+      { x: 1005, y: 415, width: 60, height: 40, color: 0x00ff00, scene: "DinoGameScene" },
+      { x: 1260, y: 555, width: 60, height: 40, color: 0x00ff00, scene: "SnakeGame" },
     ];
 
     // Create glow areas for each interactive area

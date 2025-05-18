@@ -46,11 +46,19 @@ export default class MainScene extends Phaser.Scene {
     );
     
     // Keep your original assets as well
+    this.load.audio('MainMusic', '/MainScene.mp3');
     this.load.image("player", "/BOSS.png");
     this.load.image("background", "/Volt-Town.webp");
   }
 
   create() {
+    this.sound.stopAll();
+    const music = this.sound.add('MainMusic', {
+      loop: true,  // optional: loop music
+      volume: 0.5  // optional: control volume
+    });
+
+    music.play();
     // Add background
     const bg = this.add.image(0, 0, "background").setOrigin(0);
     bg.setDisplaySize(1600, 1200);
@@ -61,7 +69,7 @@ export default class MainScene extends Phaser.Scene {
     
     // OPTION 1: Use the PlayerController with your character sprite sheet
     try {
-      this.playerController = new PlayerController(this, 'character', 520, 1130, 2);
+      this.playerController = new PlayerController(this, 'character', 750, 117, 2);
       this.player = this.playerController.getPlayer();
     } catch (error) {
       console.error("Error creating PlayerController, falling back to original player:", error);
@@ -468,17 +476,17 @@ export default class MainScene extends Phaser.Scene {
     const sceneHeight = this.cameras.main.height;
     
     // Create dialog background
-    this.dialogShadow = this.add
-      .rectangle(
-        sceneWidth / 2 + 500,
-        sceneHeight / 2 + 5,
-        500,
-        300,
-        0x000000,
-        0.5
-      )
-      .setOrigin(0.5)
-      .setScrollFactor(0);
+    // this.dialogShadow = this.add
+    //   .rectangle(
+    //     sceneWidth / 2 + 500,
+    //     sceneHeight / 2 + 5,
+    //     500,
+    //     300,
+    //     0x000000,
+    //     0.5
+    //   )
+    //   .setOrigin(0.5)
+    //   .setScrollFactor(0);
       
     this.dialogBg = this.add
       .rectangle(

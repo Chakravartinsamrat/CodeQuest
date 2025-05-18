@@ -54,9 +54,19 @@ export default class KnowledgeScene extends Phaser.Scene {
         frameHeight: 24, // Make sure these match your sprite sheet's actual dimensions
       }
     );
+
+     this.load.audio('Knowledge', '/KnowledgeScene.mp3');
   }
 
   create() {
+    this.sound.stopAll();
+    const music = this.sound.add('Knowledge', {
+      loop: true,  // optional: loop music
+      volume: 0.5  // optional: control volume
+    });
+
+    music.play();
+
     const bg = this.add.image(0, 0, "Knowledge-Arena.webp").setOrigin(0);
     bg.setDisplaySize(1600, 1200);
 
