@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { questions as generateQuestions } from './components/Ai/Generate/generateQuote';
 import { AnswerAnalyiser } from './components/Ai/Generate/AnalyseAnswer.js';
@@ -27,6 +26,8 @@ export default function EpicBossChallenge({ onClose }) {
   const [points, setPoints] = useState(0);
   const [showFeedback, setShowFeedback] = useState(false);
   const [feedbackType, setFeedbackType] = useState('');
+  const [questionBatch, setQuestionBatch] = useState(1); // Track question batches
+  const [fetchingMoreQuestions, setFetchingMoreQuestions] = useState(false);
 
   // Refs
   const chatContainerRef = useRef(null);
@@ -42,10 +43,11 @@ export default function EpicBossChallenge({ onClose }) {
     playerDamage: "https://cdn.freesound.org/previews/344/344775_6195668-lq.mp3",
     bossDamage: "https://cdn.freesound.org/previews/75/75235_35187-lq.mp3",
     victory: "https://cdn.freesound.org/previews/456/456963_5563877-lq.mp3",
-    defeat: "https://cdn.freesound.org/previews/76/76376_871591-lq.mp3"
+    defeat: "https://cdn.freesound.org/previews/76/76376_871591-lq.mp3",
+    newQuestions: "https://cdn.freesound.org/previews/565/565133_7146101-lq.mp3"
   };
 
-  // Fetch questions when component mounts
+  // Fetch questions when component mounts or when we need more
   useEffect(() => {
     const fetchQuestions = async () => {
       setIsLoading(true);
@@ -54,13 +56,24 @@ export default function EpicBossChallenge({ onClose }) {
         const currentTopic = window.gameId || "JavaScript";
         setTopic(currentTopic);
         
-        // Generate questions
+        // Generate questions - batches of 5
         const data = await generateQuestions(currentTopic, 7, 5);
-        console.log("questions data", data);
+        console.log("questions data batch", questionBatch, data);
         
         if (Array.isArray(data) && data.length > 0) {
-          setQuestions(data);
+          setQuestions(prev => {
+            // If fetching more questions, append to existing questions
+            return questionBatch === 1 ? data : [...prev, ...data];
+          });
+          
           // First question will be added in the boss entrance timeout
+          if (questionBatch === 1) {
+            // First batch is handled in boss entrance effect
+          } else {
+            // For subsequent batches, add a message that more questions are coming
+            addMessage('boss', "I grow stronger! Prepare for more challenges!");
+            playSound('newQuestions');
+          }
         } else {
           console.error("Invalid questions data format");
           // Fallback handling
@@ -72,22 +85,40 @@ export default function EpicBossChallenge({ onClose }) {
         addMessage('boss', "My questions aren't ready yet. Let's begin with something simple...");
       } finally {
         setIsLoading(false);
+        setFetchingMoreQuestions(false);
       }
     };
     
-    fetchQuestions();
+    if (questionBatch === 1 || fetchingMoreQuestions) {
+      fetchQuestions();
+    }
     
-    // Initialize audio element
-    audioRef.current = new Audio();
-    audioRef.current.volume = 0.3;
+    // Initialize audio element on first load
+    if (questionBatch === 1) {
+      audioRef.current = new Audio();
+      audioRef.current.volume = 0.3;
+    }
     
     return () => {
-      if (audioRef.current) {
+      if (questionBatch === 1 && audioRef.current) {
         audioRef.current.pause();
         audioRef.current = null;
       }
     };
-  }, []);
+  }, [questionBatch, fetchingMoreQuestions]);
+
+  // Check if we need more questions
+  useEffect(() => {
+    // If we're down to 2 questions left, fetch more
+    if (!fetchingMoreQuestions && 
+        !isLoading && 
+        questions.length > 0 && 
+        currentQuestion >= questions.length - 2 && 
+        !challengeComplete) {
+      setFetchingMoreQuestions(true);
+      setQuestionBatch(prev => prev + 1);
+    }
+  }, [currentQuestion, questions.length, isLoading, challengeComplete, fetchingMoreQuestions]);
 
   // Scroll chat to bottom when new messages come in
   useEffect(() => {
@@ -149,8 +180,27 @@ export default function EpicBossChallenge({ onClose }) {
       setBossAttackAnimation(false);
       setShowDamageEffect(true);
       playSound('playerDamage');
-      setPlayerHealth(prev => Math.max(prev - 15, 0));
+      
+      // Calculate damage
+      const damage = Math.floor(Math.random() * 10) + 10; // 10-20 damage
+      const newHealth = Math.max(playerHealth - damage, 0);
+      
+      setPlayerHealth(newHealth);
+      
+      // Add message about damage
+      addMessage('boss', `My attack deals ${damage} damage!`);
+      
       setTimeout(() => setShowDamageEffect(false), 300);
+      
+      // Check if player is defeated
+      if (newHealth <= 0) {
+        setTimeout(() => {
+          addMessage('boss', 'You have been defeated! Try again if you dare!');
+          setChallengeComplete(true);
+          setTimerRunning(false);
+          playSound('defeat');
+        }, 1000);
+      }
     }, 500);
   };
 
@@ -163,8 +213,20 @@ export default function EpicBossChallenge({ onClose }) {
     const baseDamage = Math.floor(Math.random() * 10) + 10; // 10-20 base damage
     const damage = baseDamage + (streakBonus * 2); // Each streak level adds 2 damage
     
-    setBossHealth(prev => Math.max(prev - damage, 0));
+    const newHealth = Math.max(bossHealth - damage, 0);
+    setBossHealth(newHealth);
+    
     setTimeout(() => setShowHealEffect(false), 300);
+    
+    // Check if boss is defeated
+    if (newHealth <= 0) {
+      setTimeout(() => {
+        addMessage('boss', `IMPOSSIBLE! I... I've been defeated! Your final score: ${score + 1}/${currentQuestion + 1}`);
+        setChallengeComplete(true);
+        setTimerRunning(false);
+        playSound('victory');
+      }, 1000);
+    }
     
     return damage;
   };
@@ -226,31 +288,21 @@ export default function EpicBossChallenge({ onClose }) {
         addMessage('boss', feedback);
         setScore(score + 1);
         
-        // Check if boss is defeated
+        // Check if boss is defeated (handled in damageTheBoss)
         if (bossHealth - damage <= 0) {
-          setTimeout(() => {
-            addMessage('boss', `IMPOSSIBLE! I... I've been defeated! Your final score: ${score + 1}/${questions.length}`);
-            setChallengeComplete(true);
-            setTimerRunning(false);
-            playSound('victory');
-          }, 1000);
           return;
         }
         
+        // Move to next question if available
         if (currentQuestion < questions.length - 1) {
           setCurrentQuestion(current => current + 1);
           setTimeout(() => {
             addMessage('boss', questions[currentQuestion + 1].question);
           }, 1200);
         } else {
-          // Challenge complete
-          setTimeout(() => {
-            playSound("complete");
-            const finalScore = score + 1;
-            addMessage('boss', `You have... defeated me! Final score: ${finalScore}/${questions.length} and earned ${newPoints} points!`);
-            setChallengeComplete(true);
-            setTimerRunning(false);
-          }, 1200);
+          // No more questions available yet, wait for more to load
+          // This should rarely happen since we load more questions before running out
+          addMessage('boss', "I'm gathering my strength... prepare for the next wave!");
         }
       } else {
         // Play sound effect
@@ -265,14 +317,7 @@ export default function EpicBossChallenge({ onClose }) {
         addMessage('boss', `WRONG! ${currentQ.hint || "Think harder, challenger!"}`);
         bossAttack();
         
-        if (playerHealth <= 15) {
-          setTimeout(() => {
-            addMessage('boss', 'You have been defeated! Try again if you dare!');
-            setChallengeComplete(true);
-            setTimerRunning(false);
-            playSound('defeat');
-          }, 1000);
-        }
+        // Player defeat is handled in bossAttack function
       }
     }, 500);
 
@@ -370,7 +415,7 @@ export default function EpicBossChallenge({ onClose }) {
         </div>
       )}
       
-      <div className="bg-gray-900 border-2 border-red-600 rounded-lg w-full max-w-5xl flex flex-col overflow-hidden shadow-2xl max-h-[90vh] relative">
+      <div className="bg-gray-900 border-2 border-red-600 rounded-lg w-full max-w-5xl flex flex-col overflow-hidden shadow-2xl max-h-[95vh] h-[95vh] relative">
         {/* Epic header with timer */}
         <div className="bg-gradient-to-r from-red-900 to-black text-white p-4 font-bold text-xl flex justify-between items-center border-b-2 border-red-700">
           <div className="flex items-center">
@@ -423,7 +468,7 @@ export default function EpicBossChallenge({ onClose }) {
           </div>
         </div>
         
-        <div className="flex flex-row h-[calc(100%-8rem)] overflow-hidden">
+        <div className="flex flex-row flex-grow overflow-hidden">
           {/* Left Side: Conversation Section */}
           <div className="w-1/2 p-4 bg-gray-900 flex flex-col">
             <div className="flex items-center justify-between mb-2">
@@ -512,24 +557,20 @@ export default function EpicBossChallenge({ onClose }) {
             </h2>
             
             <div className="flex-grow bg-gradient-to-b from-gray-900 to-gray-800 rounded-lg p-6 flex flex-col items-center justify-center border border-gray-700 shadow-inner">
-              {isLoading ? (
+              {isLoading && questions.length === 0 ? (
                 <div className="text-center">
                   <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-500 mb-4"></div>
                   <p className="text-gray-300">Preparing boss challenge questions...</p>
+                </div>
+              ) : fetchingMoreQuestions ? (
+                <div className="text-center">
+                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-orange-500 mb-4"></div>
+                  <p className="text-orange-300">Boss is growing stronger...</p>
                 </div>
               ) : (
                 <div className="text-center w-full">
                   {questions.length > 0 ? (
                     <>
-                      <div className="text-2xl font-bold mb-4 text-red-400 flex items-center justify-center">
-                        <span className="bg-red-900 text-white rounded-full w-10 h-10 flex items-center justify-center mr-2">
-                          {currentQuestion + 1}
-                        </span>
-                        <span className="text-gray-400">of</span>
-                        <span className="bg-gray-800 text-gray-300 rounded-full w-10 h-10 flex items-center justify-center ml-2">
-                          {questions.length}
-                        </span>
-                      </div>
                       <div className="text-xl mb-6 text-gray-100 bg-gray-800 p-4 rounded-lg border-l-4 border-red-700">
                         {questions[currentQuestion]?.question || ''}
                       </div>
@@ -551,7 +592,7 @@ export default function EpicBossChallenge({ onClose }) {
                       </div>
                       <div className="text-lg mb-2">
                         {bossHealth <= 0 
-                          ? `You've conquered the final boss with a score of ${score}/${questions.length}!` 
+                          ? `You've conquered the final boss with a score of ${score}/${currentQuestion + 1}!` 
                           : 'The boss has defeated you! Train harder and return for vengeance!'
                         }
                       </div>
@@ -568,14 +609,15 @@ export default function EpicBossChallenge({ onClose }) {
             <div className="mt-4 bg-gray-800 p-3 rounded-lg text-white border border-gray-700">
               <div className="flex justify-between">
                 <div className="font-bold text-red-400">BOSS BATTLE PROGRESS:</div>
-                <div>{isLoading ? '...' : `${currentQuestion + 1} of ${questions.length}`}</div>
+                <div>{isLoading && questions.length === 0 ? '...' : `Question ${currentQuestion + 1}`}</div>
+              </div>
+              <div className="flex justify-between mt-1">
+                <div className="text-sm text-gray-400">Battle continues until you or the boss falls!</div>
               </div>
               <div className="w-full bg-black rounded-full h-4 mt-2 border border-gray-700">
                 <div 
                   className="bg-gradient-to-r from-red-900 via-orange-600 to-yellow-500 h-4 rounded-full transition-all duration-500 ease-out"
-                  style={{ width: questions.length === 0 
-                    ? '0%' 
-                    : `${((currentQuestion) / questions.length) * 100}%` }}
+                  style={{ width: `${(100 - bossHealth)}%` }}
                 ></div>
               </div>
             </div>

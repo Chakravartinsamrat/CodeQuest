@@ -1,10 +1,11 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { questions as generateQuestions } from './components/Ai/Generate/generateQuote';
 import { AnswerAnalyiser } from './components/Ai/Generate/AnalyseAnswer.js';
 
-export default function ChallengeInterface({ topic, level, onClose }) {
+export default function GruntInterface({ topic, level, onClose, npcID, xpgained }) {
   console.log("topic in challenge interface", topic);
+  console.log("NPC ID:", npcID, "XP to be gained:", xpgained);
+  
   // State variables
   const [conversation, setConversation] = useState([
     { speaker: 'opponent', text: 'Challenge activated! Prepare yourself, warrior!' }
@@ -19,6 +20,8 @@ export default function ChallengeInterface({ topic, level, onClose }) {
   const [animateProgress, setAnimateProgress] = useState(false);
   const [questions, setQuestions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [xpUpdated, setXpUpdated] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
 
   // Refs
   const chatContainerRef = useRef(null);
@@ -29,7 +32,118 @@ export default function ChallengeInterface({ topic, level, onClose }) {
     correct: "https://cdn.freesound.org/previews/320/320181_5260872-lq.mp3",
     wrong: "https://cdn.freesound.org/previews/277/277025_5363851-lq.mp3",
     complete: "https://cdn.freesound.org/previews/270/270404_5123851-lq.mp3",
-    buttonClick: "https://cdn.freesound.org/previews/242/242501_4284968-lq.mp3"
+    buttonClick: "https://cdn.freesound.org/previews/242/242501_4284968-lq.mp3",
+    xpGain: "https://cdn.freesound.org/previews/456/456966_5121236-lq.mp3"
+  };
+
+  // Fetch user email from localStorage or session when component mounts
+  useEffect(() => {
+    // Get user email from localStorage or wherever it's stored in your app
+    const email = localStorage.getItem('userEmail') || sessionStorage.getItem('userEmail');
+    if (email) {
+      setUserEmail(email);
+    } else {
+      console.warn("User email not found in storage!");
+    }
+  }, []);
+
+  // Choose background based on topic
+  const getBackgroundForTopic = (topic) => {
+    const backgrounds = {
+      'JavaScript': 'bg-gradient-to-r from-yellow-900 to-yellow-600 bg-opacity-90',
+      'Python': 'bg-gradient-to-r from-blue-900 to-blue-600 bg-opacity-90',
+      'React': 'bg-gradient-to-r from-blue-900 to-cyan-700 bg-opacity-90',
+      'CSS': 'bg-gradient-to-r from-purple-900 to-blue-700 bg-opacity-90',
+      'HTML': 'bg-gradient-to-r from-orange-900 to-red-700 bg-opacity-90',
+      'Java': 'bg-gradient-to-r from-red-900 to-orange-700 bg-opacity-90',
+      // Default background for other topics
+      'default': 'bg-gradient-to-r from-indigo-900 to-purple-700 bg-opacity-90'
+    };
+    
+    return backgrounds[topic] || backgrounds['default'];
+  };
+
+  // Scene elements based on topic
+  const getSceneElements = (topic) => {
+    const elements = {
+      'JavaScript': (
+        <>
+          <div className="absolute top-10 left-10 text-8xl opacity-20 animate-pulse">{ }</div>
+          <div className="absolute bottom-20 right-10 text-9xl opacity-10 animate-bounce">{ }</div>
+          <div className="absolute top-1/4 right-1/4 text-7xl opacity-15 animate-spin">()</div>
+          <div className="absolute top-2/3 left-1/3 text-6xl opacity-20 animate-pulse">;</div>
+        </>
+      ),
+      'Python': (
+        <>
+          <div className="absolute top-20 left-20 text-8xl opacity-20 animate-pulse">🐍</div>
+          <div className="absolute bottom-30 right-20 text-7xl opacity-15 animate-bounce">def</div>
+          <div className="absolute top-1/3 right-1/3 text-6xl opacity-15 animate-spin">:</div>
+          <div className="absolute bottom-1/4 left-1/4 text-7xl opacity-20 animate-pulse">for</div>
+        </>
+      ),
+      'React': (
+        <>
+          <div className="absolute top-20 left-20 text-8xl opacity-20 animate-pulse">⚛️</div>
+          <div className="absolute bottom-30 right-20 text-7xl opacity-15 animate-bounce">&lt;/&gt;</div>
+          <div className="absolute top-1/3 right-1/3 text-6xl opacity-15 animate-spin">{ }</div>
+          <div className="absolute bottom-1/4 left-1/4 text-7xl opacity-20 animate-pulse">JSX</div>
+        </>
+      ),
+      // Add more scene elements for other topics
+      'default': (
+        <>
+          <div className="absolute top-20 left-20 text-8xl opacity-20 animate-pulse">🌟</div>
+          <div className="absolute bottom-30 right-20 text-7xl opacity-15 animate-bounce">✨</div>
+          <div className="absolute top-1/3 right-1/3 text-6xl opacity-15 animate-spin">💻</div>
+          <div className="absolute bottom-1/4 left-1/4 text-7xl opacity-20 animate-pulse">🎯</div>
+        </>
+      )
+    };
+    
+    return elements[topic] || elements['default'];
+  };
+
+  // Function to update XP via API call
+  const updateXP = async () => {
+    if (!userEmail || !npcID || !xpgained || xpUpdated) {
+      console.error("Cannot update XP. Missing data:", { userEmail, npcID, xpgained });
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:3000/update-xp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          useremail: userEmail,
+          xpgained: xpgained,
+          npcID: npcID
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("XP updated successfully:", data);
+        setXpUpdated(true);
+        
+        // Play XP gain sound
+        playSound("xpGain");
+        
+        // Add XP gain message to conversation
+        addMessage('opponent', `Congratulations! You've earned ${xpgained} XP from this battle!`);
+        
+        return data;
+      } else {
+        console.error("Failed to update XP:", response.statusText);
+        return null;
+      }
+    } catch (error) {
+      console.error("Error updating XP:", error);
+      return null;
+    }
   };
 
   // Fetch questions when component mounts
@@ -37,13 +151,13 @@ export default function ChallengeInterface({ topic, level, onClose }) {
     const fetchQuestions = async () => {
       setIsLoading(true);
       try {
-        const data = await generateQuestions(topic,level , 5);
+        const data = await generateQuestions(topic, level, 5);
         console.log("questions data", data);
         setQuestions(data);
         setIsLoading(false);
         
         // Add the first question to the conversation
-        if (data > 0) {
+        if (data.length > 0) {
           setConversation(prev => [
             ...prev, 
             { speaker: 'opponent', text: data[0].question }
@@ -187,12 +301,20 @@ export default function ChallengeInterface({ topic, level, onClose }) {
           }, 1200);
         } else {
           // Challenge complete
-          setTimeout(() => {
+          setTimeout(async () => {
             playSound("complete");
             const finalScore = score + 1;
             const message = getFinalMessage(finalScore, questions.length);
             addMessage('opponent', message);
             setChallengeComplete(true);
+            
+            // If this is the last question and user passed, update XP
+            if (finalScore >= questions.length / 2) {
+              // We make the XP API call here
+              await updateXP();
+            } else {
+              addMessage('opponent', "You need to score at least 50% to earn XP. Try again!");
+            }
           }, 1200);
         }
       } else {
@@ -212,36 +334,60 @@ export default function ChallengeInterface({ topic, level, onClose }) {
     setUserInput('');
   };
 
+  // Handle the close button click
+  const handleClose = () => {
+    playSound("buttonClick");
+    onClose();
+  };
+
+  // Get scene elements for the topic
+  const sceneElements = getSceneElements(topic);
+
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-gray-900">
+    <div className="fixed inset-0 flex items-center justify-center z-[1000]" style={{backgroundColor: 'rgba(0,0,0,0.7)'}}>
       {/* Feedback Animation */}
       {showFeedback && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
+        <div className="fixed inset-0 flex items-center justify-center z-[1001] pointer-events-none">
           <div className={`text-9xl animate-pulse ${feedbackType === 'correct' ? 'text-green-500' : 'text-red-500'}`}>
             {feedbackType === 'correct' ? '✓' : '✗'}
           </div>
         </div>
       )}
       
-      <div className="bg-gray-900 border-2 border-indigo-800 rounded-lg w-full max-w-4xl flex flex-col overflow-hidden shadow-xl max-h-screen">
-        <div className="bg-indigo-900 text-white p-4 font-bold text-xl flex justify-between items-center border-b-2 border-indigo-700">
+      {/* Dynamic background elements based on topic */}
+      <div className="absolute inset-0 z-[1001] pointer-events-none overflow-hidden">
+        {sceneElements}
+      </div>
+      
+      {/* Main container with transparent background - INCREASED WIDTH AND HEIGHT */}
+      <div className="bg-gray-900 bg-opacity-80 backdrop-blur-sm border-2 border-indigo-700 rounded-lg w-full max-w-5xl flex flex-col overflow-hidden shadow-2xl max-h-[95vh] z-[1002]">
+        {/* Header with topic and level */}
+        <div className="bg-gradient-to-r from-indigo-900 to-black text-white p-4 font-bold text-xl flex justify-between items-center border-b-2 border-indigo-600">
           <div className="flex items-center">
-            <span className="mr-2 text-yellow-300 flex items-center">
-              <span className="text-2xl mr-1">⚔️</span> Challenge: {topic} ⚔️ Level: {level}
-            </span>
+            <span className="text-indigo-400 mr-2">⚔️</span>
+            <span className="animate-pulse">CHALLENGE: {topic} • Level {level}</span>
           </div>
           
-          <div className="flex items-center">
+          <div className="flex items-center space-x-4">
             <div className="mr-4 flex items-center bg-gray-800 px-3 py-1 rounded-full">
               <span className="text-yellow-400 font-bold mr-1">★</span>
               <span className="text-yellow-100">Score: {score}</span>
             </div>
+            {xpUpdated && (
+              <div className="mr-4 flex items-center bg-green-800 px-3 py-1 rounded-full animate-pulse">
+                <span className="text-green-400 font-bold mr-1">✓</span>
+                <span className="text-green-100">XP +{xpgained}</span>
+              </div>
+            )}
+            <button onClick={onClose} className="text-white hover:text-red-400">
+              ✕
+            </button>
           </div>
         </div>
         
-        <div className="flex flex-row h-96 overflow-hidden">
-          {/* Left Side: Conversation Section */}
-          <div className="w-1/2 p-4 bg-gray-800 flex flex-col">
+        <div className="flex flex-row h-[calc(100%-4rem)] overflow-hidden">
+          {/* Left Side: Conversation Section - INCREASED HEIGHT */}
+          <div className="w-1/2 p-4 bg-gray-900 bg-opacity-60 flex flex-col">
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-lg font-bold text-white">Conversation</h2>
               {streak >= 3 && (
@@ -252,7 +398,7 @@ export default function ChallengeInterface({ topic, level, onClose }) {
             </div>
             <div 
               ref={chatContainerRef}
-              className="flex-grow bg-gray-700 rounded-lg p-4 overflow-y-auto mb-4"
+              className="flex-grow bg-gradient-to-b from-gray-900 to-gray-800 rounded-lg p-4 overflow-y-auto mb-4 border border-gray-700 min-h-[400px]"
             >
               {conversation.map((msg, index) => (
                 <div 
@@ -260,10 +406,10 @@ export default function ChallengeInterface({ topic, level, onClose }) {
                   className={`mb-4 ${msg.speaker === 'user' ? 'text-right' : 'text-left'}`}
                 >
                   <div 
-                    className={`inline-block rounded-lg px-4 py-2 max-w-xs ${
+                    className={`inline-block rounded-lg px-4 py-2 max-w-[90%] ${
                       msg.speaker === 'user' 
-                        ? 'bg-blue-600 text-white' 
-                        : 'bg-gray-200 text-black'
+                        ? 'bg-blue-900 text-blue-100 border border-blue-700' 
+                        : 'bg-indigo-900 text-gray-100 border border-indigo-700'
                     }`}
                     style={msg.text.includes('\n') ? { whiteSpace: 'pre-wrap', textAlign: 'left' } : {}}
                   >
@@ -273,46 +419,57 @@ export default function ChallengeInterface({ topic, level, onClose }) {
               ))}
             </div>
             
-            <div className="flex bg-gray-900 rounded-lg p-1">
-              <input
-                type="text"
-                value={userInput}
-                onChange={(e) => setUserInput(e.target.value)}
-                className="flex-grow p-3 rounded-l-lg border-0 bg-gray-800 text-white"
-                placeholder="Type your answer..."
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    handleSubmit();
-                  }
-                }}
-                disabled={isLoading || challengeComplete}
-              />
-              <button 
-                onClick={handleSubmit} 
-                className={`${isLoading || challengeComplete 
-                  ? 'bg-gray-600 cursor-not-allowed' 
-                  : 'bg-blue-600 hover:bg-blue-700'} text-white px-6 py-2 rounded-r-lg`}
-                disabled={isLoading || challengeComplete}
+            {!challengeComplete ? (
+              <div className="flex relative">
+                <input
+                  type="text"
+                  value={userInput}
+                  onChange={(e) => setUserInput(e.target.value)}
+                  className="flex-grow p-3 rounded-l-lg border-2 border-indigo-700 bg-gray-800 text-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter your answer..."
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSubmit();
+                    }
+                  }}
+                  disabled={isLoading || challengeComplete}
+                />
+                <button 
+                  onClick={handleSubmit} 
+                  className={`${isLoading || challengeComplete 
+                    ? 'bg-gray-600 cursor-not-allowed' 
+                    : 'bg-indigo-700 hover:bg-indigo-600'} text-white px-6 py-3 rounded-r-lg transition-colors font-bold border-2 border-indigo-700`}
+                  disabled={isLoading || challengeComplete}
+                >
+                  SUBMIT
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={onClose}
+                className="w-full p-3 rounded-lg font-bold shadow-lg flex items-center justify-center bg-green-700 text-white hover:bg-green-600 border-2 border-green-800"
               >
-                Send
+                <span className="mr-2">🏆</span> COMPLETE CHALLENGE
               </button>
-            </div>
+            )}
           </div>
           
-          {/* Right Side: Content Section */}
-          <div className="w-1/2 p-4 bg-gray-900 flex flex-col">
-            <h2 className="text-lg font-bold text-white mb-2">Question</h2>
+          {/* Right Side: Content Section - Quiz View - INCREASED HEIGHT */}
+          <div className="w-1/2 p-4 bg-black bg-opacity-50 flex flex-col">
+            <h2 className="text-lg font-bold mb-2 text-indigo-400 flex items-center">
+              <span className="mr-2">❓</span> Knowledge Challenge
+            </h2>
             
-            <div className="flex-grow bg-gray-800 rounded-lg p-6 flex flex-col items-center justify-center overflow-auto">
+            <div className="flex-grow bg-gradient-to-b from-gray-900 to-gray-800 rounded-lg p-6 flex flex-col items-center justify-center border border-gray-700 shadow-inner min-h-[400px]">
               {isLoading ? (
                 <div className="text-center">
-                  <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
-                  <p className="text-gray-300">Loading questions...</p>
+                  <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500 mb-4"></div>
+                  <p className="text-gray-300">Preparing challenge questions...</p>
                 </div>
               ) : (
                 <div className="text-center w-full">
                   <div className="text-2xl font-bold mb-4 text-white flex items-center justify-center">
-                    <span className="bg-blue-700 text-white rounded-full w-10 h-10 flex items-center justify-center mr-2">
+                    <span className="bg-indigo-700 text-white rounded-full w-10 h-10 flex items-center justify-center mr-2">
                       {currentQuestion + 1}
                     </span>
                     <span className="text-gray-400">of</span>
@@ -320,24 +477,33 @@ export default function ChallengeInterface({ topic, level, onClose }) {
                       {questions.length}
                     </span>
                   </div>
-                  {questions.length > 0 && (
-                    <div className="text-xl mb-6 text-gray-100 bg-gray-700 p-4 rounded-lg border-l-4 border-blue-500">
+                  
+                  {questions.length > 0 ? (
+                    <div className="text-xl mb-6 text-gray-100 bg-gray-800 p-4 rounded-lg border-l-4 border-indigo-700">
                       {questions[currentQuestion]?.question || ''}
                     </div>
+                  ) : (
+                    <div className="text-xl mb-6 text-gray-300">
+                      No questions available. The challenge awaits...
+                    </div>
                   )}
+                  
                   {challengeComplete && (
-                    <div className="bg-indigo-900 border border-blue-700 text-blue-100 px-4 py-6 rounded-lg">
-                      <div className="font-bold text-2xl mb-3">
-                        Challenge Complete!
+                    <div className="bg-indigo-900 border border-indigo-700 text-indigo-100 px-6 py-4 rounded-lg shadow-lg">
+                      <div className="font-bold text-xl mb-2">
+                        CHALLENGE COMPLETE!
                       </div>
-                      <div className="text-xl">
-                        Your final score:
-                        <div className="mt-2 text-3xl font-bold">
-                          <span className="text-yellow-300">{score}</span>
-                          <span className="text-gray-400"> / </span>
-                          <span>{questions.length}</span>
+                      <div className="text-lg mb-2">
+                        You've conquered this challenge with a score of {score}/{questions.length}!
+                      </div>
+                      <div className="text-xl font-bold mt-3">
+                        Final Score: {score}
+                      </div>
+                      {xpUpdated && (
+                        <div className="bg-green-800 text-white px-4 py-2 rounded-lg mt-3 font-bold animate-pulse">
+                          XP EARNED: +{xpgained}
                         </div>
-                      </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -345,19 +511,19 @@ export default function ChallengeInterface({ topic, level, onClose }) {
             </div>
             
             {/* Progress Bar */}
-            <div className="mt-4 bg-gray-800 p-3 rounded-lg text-white">
+            <div className="mt-4 bg-gray-800 p-3 rounded-lg text-white border border-gray-700">
               <div className="flex justify-between">
-                <div className="font-bold">Progress:</div>
-                <div>{isLoading ? '...' : `${currentQuestion + 1} of ${questions.length}`}</div>
+                <div className="font-bold text-indigo-400">CHALLENGE PROGRESS:</div>
+                <div>{isLoading ? '...' : `Question ${currentQuestion + 1} of ${questions.length}`}</div>
               </div>
-              <div className="w-full bg-gray-900 rounded-full h-4 mt-2">
+              <div className="w-full bg-black rounded-full h-4 mt-2 border border-gray-700">
                 <div 
-                  className={`${
-                    animateProgress ? 'bg-blue-500 animate-pulse' : 'bg-blue-600'
-                  } h-4 rounded-full transition-all duration-1000`}
-                  style={{ width: isLoading || questions.length === 0 
+                  className={`bg-gradient-to-r from-indigo-900 via-blue-600 to-indigo-500 h-4 rounded-full transition-all duration-500 ease-out ${
+                    animateProgress ? 'animate-pulse' : ''
+                  }`}
+                  style={{ width: `${isLoading || questions.length === 0 
                     ? '0%' 
-                    : `${((currentQuestion) / questions.length) * 100}%` }}
+                    : `${((currentQuestion) / questions.length) * 100}%`}` }}
                 ></div>
               </div>
             </div>
@@ -367,3 +533,26 @@ export default function ChallengeInterface({ topic, level, onClose }) {
     </div>
   );
 }
+
+// Add CSS for the floating animation
+const styleTag = document.createElement('style');
+styleTag.textContent = `
+  @keyframes float {
+    0% {
+      transform: translateY(0) translateX(0);
+    }
+    25% {
+      transform: translateY(-20px) translateX(10px);
+    }
+    50% {
+      transform: translateY(0) translateX(25px);
+    }
+    75% {
+      transform: translateY(20px) translateX(10px);
+    }
+    100% {
+      transform: translateY(0) translateX(0);
+    }
+  }
+`;
+document.head.appendChild(styleTag);
