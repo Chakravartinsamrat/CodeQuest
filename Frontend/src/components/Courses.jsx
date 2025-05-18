@@ -33,7 +33,7 @@ export default function CoursesSection() {
       {
         title: "Physics",
         desc: "Explore the laws of nature, motion, energy, and the universe around us.",
-        img: "https://images.pexels.com/photos/2563697/pexels-photo-2563697.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+        img: "https://student-cms.prd.timeshighereducation.com/sites/default/files/styles/default/public/physics_blackboard.jpg?itok=2zuQhCv8",
       }
       
     ];
