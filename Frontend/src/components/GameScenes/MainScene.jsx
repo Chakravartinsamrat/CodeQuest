@@ -130,9 +130,9 @@ export default class MainScene extends Phaser.Scene {
       }
     });
 
-    this.addNpcTrigger(1065, 523, "Welcome, hero! Be careful ahead.");
-    this.addNpcTrigger(790, 555, "I once saw a monster around here...");
-    this.addNpcTrigger(1190, 655, "I once saw a monster around here...");
+    this.addNpcTrigger(1065, 523, "The only way to leave the city is to defeat the Gym Leader...");
+    this.addNpcTrigger(790, 555, "Welcome, hero! Be careful ahead.");
+    this.addNpcTrigger(1190, 655, "I entered this city to learn, but I could never defeat the Gym Leader. Guess I'm stuck.");
 
     // Define grass regions - you may need to adjust these based on your actual map
     this.grassRegions = [
