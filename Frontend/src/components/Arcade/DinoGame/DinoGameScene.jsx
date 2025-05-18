@@ -1,219 +1,203 @@
-import React, { useEffect, useRef } from "react";
-import Phaser from "phaser";
+// GameScene.jsx
+import Phaser from 'phaser';
 
-// Game assets
-const ASSETS = {
-  DINO: "/api/placeholder/50/50",
-  OBSTACLE: "/api/placeholder/30/30",
-  GROUND: "/api/placeholder/800/24",
-};
-
-// Game scene class
-export default class DinoScene extends Phaser.Scene {
+export default class DinoGameScene extends Phaser.Scene {
   constructor() {
-    super("DinoScene");
-    this.player = null;
-    this.obstacles = null;
-    this.ground = null;
-    this.isGameOver = false;
-    this.score = 0;
-    this.scoreText = null;
-    this.jumpSound = null;
-    this.gameOverSound = null;
-    this.scoreSound = null;
-    this.spaceKey = null;
-    this.restartKey = null;
-    this.obstacleTimer = null;
-    this.lastObstacleTime = 0;
-    this.obstacleInterval = 1500;
-    this.gameSpeed = 300;
+    super('DinoGameScene');
   }
-
   preload() {
-    this.load.image("dino", ASSETS.DINO);
-    this.load.image("obstacle", ASSETS.OBSTACLE);
-    this.load.image("ground", ASSETS.GROUND);
+    this.load.image('sprite', '/sprite.png');
   }
 
   create() {
-    // Create ground
-    this.ground = this.physics.add.staticGroup();
-    this.ground.create(400, 450, "ground").setScale(1).refreshBody();
+    this.canvasWidth = this.sys.game.config.width;
+    this.canvasHeight = this.sys.game.config.height;
 
-    // Create player (dino)
-    this.player = this.physics.add.sprite(100, 380, "dino");
-    this.player.setBounce(0);
-    this.player.setCollideWorldBounds(true);
+    this.sprImg = this.add.image(0, 0, 'sprite').setVisible(false); // just preload
 
-    // Create obstacles group
-    this.obstacles = this.physics.add.group();
+    this.scoreInterval = 0;
+    this.frameInterval = 0;
+    this.groundscroll = 0;
+    this.groundscroll2 = 0;
+    this.tempstart = 0;
+    this.groundbool = false;
+    this.frame = 0;
+    this.bool = false;
+    this.grav = 0.6;
+    this.gamespeed = 0;
 
-    // Colliders
-    this.physics.add.collider(this.player, this.ground);
-    this.physics.add.collider(this.obstacles, this.ground);
+    this.multiS = -1;
+    this.picS = 0;
+    this.obsS = {
+      x: 20, y: 230, w: 34, h: 70, scroll: -100, on: false,
+    };
 
-    // Collision between player and obstacles
-    this.physics.add.overlap(
-      this.player,
-      this.obstacles,
-      this.gameOver,
-      null,
-      this
-    );
+    this.multiB = -1;
+    this.picB = 0;
+    this.obsB = {
+      x: 20, y: 201, w: 49, h: 100, scroll: -200, on: false,
+    };
 
-    this.navController = new NavigationController(this);
+    this.p = {
+      x: 100, y: 500, w: 89, h: 94, yv: 0, score: 0, hscore: 0, jump: 15,
+    };
 
-    // Input events
-    this.spaceKey = this.input.keyboard.addKey(
-      Phaser.Input.Keyboard.KeyCodes.SPACE
-    );
-    this.restartKey = this.input.keyboard.addKey(
-      Phaser.Input.Keyboard.KeyCodes.R
-    );
+    this.pbox = {
+      x: this.p.x, y: 0, w: 80, h: 75,
+    };
 
-    // Score
-    this.scoreText = this.add.text(16, 16, "Score: 0", {
-      fontSize: "24px",
-      fill: "#000",
-    });
+    this.onG = false;
 
-    // Start spawning obstacles
-    this.obstacleTimer = this.time.addEvent({
-      delay: this.obstacleInterval,
-      callback: this.spawnObstacle,
-      callbackScope: this,
-      loop: true,
-    });
+    this.plat = {
+      x: 0, y: this.canvasHeight - 100, w: this.canvasWidth, h: 5,
+    };
+
+    this.input.keyboard.on('keydown-UP', this.keyDown, this);
   }
 
   update() {
-    if (this.isGameOver) {
-      if (this.restartKey.isDown) {
-        this.scene.restart();
-        this.isGameOver = false;
-        this.score = 0;
-        this.gameSpeed = 300;
-      }
-      return;
+    const ctx = this.game.canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Update physics
+    if (!this.onG) this.p.yv += this.grav;
+    this.p.y += this.p.yv;
+    this.pbox.y = this.p.y;
+
+    // Score
+    this.scoreInterval++;
+    if (this.scoreInterval > 6 && this.gamespeed !== 0) {
+      this.p.score++;
+      this.scoreInterval = 0;
     }
 
-    // Jump logic
-    if (this.spaceKey.isDown && this.player.body.touching.down) {
-      this.player.setVelocityY(-500);
+    // Speed increase
+    if (this.gamespeed < 17 && this.gamespeed !== 0) {
+      this.gamespeed = 7 + (this.p.score / 100);
     }
 
-    // Update score
-    this.score += 1;
-    this.scoreText.setText("Score: " + Math.floor(this.score / 10));
+    // Ground collision
+    this.onG = false;
+    if (this.p.y + this.p.h > this.plat.y) {
+      this.p.y = this.plat.y - this.p.h;
+      this.onG = true;
+    }
 
-    // Increase game speed over time
-    if (this.score % 500 === 0) {
-      this.gameSpeed += 25;
-      this.obstacleInterval = Math.max(500, this.obstacleInterval - 100);
-      if (this.obstacleTimer) {
-        this.obstacleTimer.delay = this.obstacleInterval;
+    // Collision check
+    const checkCollision = (obs, multi) => {
+      return this.pbox.x > (this.canvasWidth - obs.scroll) - this.p.w &&
+        this.pbox.x < (this.canvasWidth - obs.scroll) + (obs.w * multi) &&
+        this.pbox.y > obs.y - this.pbox.h;
+    };
+
+    if (checkCollision(this.obsB, this.multiB) || checkCollision(this.obsS, this.multiS)) {
+      this.gameover();
+    }
+
+    // Frame switching
+    this.frameInterval++;
+    if (this.frameInterval > 5) {
+      this.bool = !this.bool;
+      this.frameInterval = 0;
+    }
+
+    this.frame = this.bool && this.onG ? 1514 : (!this.bool && this.onG ? 1602 : 1338);
+
+    // Draw
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
+
+    // Ground
+    this.groundscroll += this.gamespeed;
+    ctx.drawImage(this.textures.get('sprite').getSourceImage(), 0, 104, 2404, 18, 0 - this.groundscroll + this.tempstart, this.plat.y - 24, 2404, 18);
+
+    if (this.groundscroll - this.tempstart > 2404 - this.canvasWidth || this.groundbool) {
+      this.groundbool = true;
+      this.groundscroll2 += this.gamespeed;
+      ctx.drawImage(this.textures.get('sprite').getSourceImage(), 0, 104, this.canvasWidth, 18, 0 - this.groundscroll2 + this.canvasWidth, this.plat.y - 24, this.canvasWidth, 18);
+      if (this.groundscroll2 > this.canvasWidth && this.groundscroll - this.tempstart > 1000) {
+        this.tempstart = this.canvasWidth;
+        this.groundscroll = 20;
+      }
+      if (this.groundscroll2 > 2402) {
+        this.groundscroll2 = 0;
+        this.groundbool = false;
       }
     }
 
-    // Move obstacles
-    this.obstacles.children.iterate((obstacle) => {
-      if (obstacle) {
-        obstacle.setVelocityX(-this.gameSpeed);
+    // Character
+    const sprite = this.textures.get('sprite').getSourceImage();
+    const frameToDraw = this.gamespeed !== 0 ? this.frame : 1338;
+    ctx.drawImage(sprite, frameToDraw, 0, 88, 94, this.p.x, this.p.y, this.p.w, this.p.h);
 
-        // Remove obstacles that are off-screen
-        if (obstacle.x < -50) {
-          obstacle.destroy();
-        }
+    // Small obstacle
+    if (!this.obsB.on) {
+      this.obsS.on = true;
+      if (this.multiS === -1) this.rngS();
+
+      ctx.drawImage(sprite, this.picS, 2, this.obsS.w * this.multiS, this.obsS.h, this.canvasWidth - this.obsS.scroll, this.obsS.y, this.obsS.w * this.multiS, this.obsS.h);
+      this.obsS.scroll += this.gamespeed;
+
+      if (this.obsS.scroll > this.canvasWidth + this.obsS.w * 3) {
+        this.obsS.scroll = -100;
+        this.multiS = -1;
+        this.obsS.on = false;
       }
-    });
+    }
+
+    // Big obstacle
+    if (!this.obsS.on) {
+      this.obsB.on = true;
+      if (this.multiB === -1) this.rngB();
+
+      ctx.drawImage(sprite, 652, 2, this.obsB.w * this.multiB, this.obsB.h, this.canvasWidth - this.obsB.scroll, this.obsB.y, this.obsB.w * this.multiB, this.obsB.h);
+      this.obsB.scroll += this.gamespeed;
+
+      if (this.obsB.scroll > this.canvasWidth + this.obsB.w * 3) {
+        this.obsB.scroll = -200;
+        this.multiB = -1;
+        this.obsB.on = false;
+      }
+    }
+
+    // Score UI
+    ctx.font = '20px verdana';
+    ctx.fillStyle = 'black';
+    ctx.fillText(`Score: ${this.p.score}`, 100, this.canvasHeight - 40);
+    ctx.fillText(`Highscore: ${this.p.hscore}`, 600, this.canvasHeight - 40);
   }
 
-  spawnObstacle() {
-    if (this.isGameOver) return;
-
-    // Create a new obstacle at the right edge of the screen
-    const obstacle = this.obstacles.create(800, 410, "obstacle");
-    obstacle.setOrigin(0, 1);
-    obstacle.setVelocityX(-this.gameSpeed);
-    obstacle.setImmovable(true);
-
-    // Random scale for variety
-    const scale = Phaser.Math.FloatBetween(0.8, 1.2);
-    obstacle.setScale(scale);
+  keyDown() {
+    if (this.onG) this.p.yv = -this.p.jump;
+    if (this.gamespeed === 0) this.gamespeed = 7;
   }
 
-  gameOver() {
-    this.isGameOver = true;
-    this.physics.pause();
-
-    this.player.setTint(0xff0000);
-
-    // Game over text
-    this.add
-      .text(400, 300, "GAME OVER", {
-        fontSize: "48px",
-        fill: "#000",
-        align: "center",
-      })
-      .setOrigin(0.5);
-
-    this.add
-      .text(400, 350, "Press R to restart", {
-        fontSize: "24px",
-        fill: "#000",
-        align: "center",
-      })
-      .setOrigin(0.5);
-
-    if (this.obstacleTimer) {
-      this.obstacleTimer.remove();
+  gameover() {
+    this.gamespeed = 0;
+    console.log('HIT!');
+    if (this.p.score > this.p.hscore) {
+      this.p.hscore = this.p.score;
     }
+    this.p.score = 0;
+    this.obsB.scroll = -200;
+    this.obsS.scroll = -100;
+    this.scoreInterval = 0;
+    this.frameInterval = 0;
+    this.groundscroll = 0;
+    this.groundscroll2 = 0;
+    this.tempstart = 0;
+    this.groundbool = false;
+    this.multiS = -1;
+    this.multiB = -1;
+  }
+
+  rngS() {
+    this.multiS = Math.floor(Math.random() * 3) + 1;
+    this.picS = 446 + (Math.floor(Math.random() * 2) * 102);
+  }
+
+  rngB() {
+    this.multiB = Math.floor(Math.random() * 3) + 1;
+    this.picB = 652 + (Math.floor(Math.random() * 2) * 150);
   }
 }
-
-// React component that integrates with Phaser
-const DinoGame = ({ width = 800, height = 500, ...props }) => {
-  const gameRef = useRef(null);
-  const phaserGameRef = useRef(null);
-
-  useEffect(() => {
-    // Configuration for Phaser game
-    const config = {
-      type: Phaser.AUTO,
-      width,
-      height,
-      parent: gameRef.current,
-      physics: {
-        default: "arcade",
-        arcade: {
-          gravity: { y: 800 },
-          debug: false,
-        },
-      },
-      scene: [DinoScene],
-    };
-
-    // Create new Phaser game instance
-    phaserGameRef.current = new Phaser.Game(config);
-
-    // Cleanup
-    return () => {
-      if (phaserGameRef.current) {
-        phaserGameRef.current.destroy(true);
-      }
-    };
-  }, [width, height]);
-
-  return (
-    <div className="flex flex-col items-center">
-      <div className="mb-4 text-2xl font-bold">Chrome Dino Game</div>
-      <div
-        className="border-4 border-gray-800 rounded-lg overflow-hidden"
-        ref={gameRef}
-      />
-      <div className="mt-4 text-lg">
-        Press SPACE to jump, R to restart after game over
-      </div>
-    </div>
-  );
-};
