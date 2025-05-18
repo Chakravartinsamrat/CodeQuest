@@ -96,6 +96,38 @@ export default class GymScene extends Phaser.Scene {
     );
     this.speed = 300;
     this.navController = new NavigationController(this);
+    
+    // Create obstacles
+    this.obstacles = this.physics.add.staticGroup();
+    this.createObstacleRect(800, 720, 672, 25); //middle border
+    this.createObstacleRect(1237, 950, 542, 25); //right below border
+    this.createObstacleRect(1298, 900, 330, 50); //right above border
+    this.createObstacleRect(370, 950, 542, 25); //left bottom border
+    this.createObstacleRect(290, 905, 330, 50); //left above border
+    this.createObstacleRect(440, 465, 680, 50); 
+
+	// this.createObstacleRect(460, 720,672,25);
+    // this.createObstacleRect(947, 950,542,25);
+    // this.createObstacleRect(1158, 900,330,50);
+    // this.createObstacleRect(100, 950,542,25);
+    // this.createObstacleRect(100, 900,330,50);
+    // this.createObstacleRect(100, 465,680,50);
+    
+    // Add collision between player and obstacles
+    this.physics.add.collider(this.player, this.obstacles);
+  }
+
+  createObstacleRect(x, y, width, height) {
+    // Create an invisible rectangle as an obstacle
+    const obstacle = this.add.rectangle(x, y, width, height, 0xff0000, 0.0);
+    this.obstacles.add(obstacle);
+    
+    // Enable debug visualization if needed (uncomment for debugging)
+    // const debugGraphics = this.add.graphics().setAlpha(0.3);
+    // debugGraphics.fillStyle(0xff0000);
+    // debugGraphics.fillRect(x - width/2, y - height/2, width, height);
+    
+    return obstacle;
   }
 
   setupNPCs() {
@@ -302,9 +334,9 @@ export default class GymScene extends Phaser.Scene {
       .on("pointerdown", () => {
         this.destroyDialog();
         if (type === "gym") {
-          this.launchGymInterface();
+          this.showGymInterface();
         } else {
-          this.launchGruntInterface(level, topic);
+          this.showGruntInterface(level, topic);
         }
       })
       .on("pointerover", () =>
@@ -363,8 +395,7 @@ export default class GymScene extends Phaser.Scene {
     if (this.noBtn) this.noBtn.destroy();
   }
 
-  // Simplified direct interface launch methods without transitions
-  launchGymInterface() {
+  showGymInterface() {
     // Store player position for later use
     const playerPos = { x: this.player.x, y: this.player.y };
     this.game.registry.set("playerPos", playerPos);
@@ -385,7 +416,7 @@ export default class GymScene extends Phaser.Scene {
     }
   }
 
-  launchGruntInterface(level, topic) {
+  showGruntInterface(level, topic) {
     // Store player position for later use
     const playerPos = { x: this.player.x, y: this.player.y };
     this.game.registry.set("playerPos", playerPos);
