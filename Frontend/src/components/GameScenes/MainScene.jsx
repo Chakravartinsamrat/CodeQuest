@@ -144,7 +144,7 @@ export default class MainScene extends Phaser.Scene {
 
     // Define grass regions - you may need to adjust these based on your actual map
     this.grassRegions = [
-      { x: 940, y: 608, width: 300, height: 190 },  // Main grass field
+      // { x: 940, y: 608, width: 300, height: 190 },  // Main grass field
       { x: 215, y: 720, width: 120, height: 120 },  // Small grass patch
       { x: 345, y: 291, width: 300, height: 100 },  // Right side grass
       { x: 845, y: 280, width: 500, height: 100 },  // Right side grass

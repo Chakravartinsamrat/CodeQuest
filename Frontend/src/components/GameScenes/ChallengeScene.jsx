@@ -38,7 +38,7 @@ export default class ChallengeScene extends Phaser.Scene {
 
   create(data) {
     this.sound.stopAll();
-    const music = this.sound.add('Knowledge', {
+    const music = this.sound.add('Training', {
       loop: true,  // optional: loop music
       volume: 0.5  // optional: control volume
     });

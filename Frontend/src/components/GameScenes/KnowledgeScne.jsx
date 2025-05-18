@@ -253,9 +253,9 @@ this.physics.add.collider(this.player, this.obstacles);
     fillRect.setOrigin(0, 0);
     
     // Create the red border (stroke)
-    const borderRect = this.add.rectangle(x, y, width, height);
-    borderRect.setOrigin(0, 0);
-    borderRect.setStrokeStyle(4, 0xFF0000);
+    // const borderRect = this.add.rectangle(x, y, width, height);
+    // borderRect.setOrigin(0, 0);
+    // borderRect.setStrokeStyle(4, 0xFF0000);
     
     // Add only the fill rectangle to the physics group (for collision)
     this.obstacles.add(fillRect, true);
