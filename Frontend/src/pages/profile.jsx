@@ -13,12 +13,12 @@ export default function ProfilePage() {
       const email = user.primaryEmailAddress.emailAddress;
 
       try {
-        const res = await axios.get(`http://localhost:3000/api/user/${email}`);
+        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/user/${email}`);
         setProfile(res.data);
       } catch (err) {
         if (err.response && err.response.status === 404) {
           try {
-            const createRes = await axios.post("http://localhost:3000/api/user", {
+            const createRes = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/user`, {
               email,
               xp: 1,
               level: 1,

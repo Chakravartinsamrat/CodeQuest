@@ -3,7 +3,8 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./App.css";
 import Game from "./components/Game";
 import Home from "./pages/Home/Home";
-import { RedirectToSignIn, SignedIn, SignedOut } from "@clerk/clerk-react";
+import { RedirectToSignIn, SignedIn, SignedOut, useUser } from "@clerk/clerk-react";
+import { useClerk } from "@clerk/clerk-react";
 
 import CheckProfile from "./pages/CheckProfile";
 import Profile from "./pages/profile";
@@ -15,12 +16,15 @@ function App() {
   const [h, setH] = useState(window.innerHeight);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
+
   // Add event listener for fullscreen changes
   useEffect(() => {
     const handleFullscreenChange = () => {
+      console.log("app")
       const fullscreenActive = !!document.fullscreenElement;
       setIsFullscreen(fullscreenActive);
 
+      
       // if (fullscreenActive) {
       //   setW(window.innerWidth);
       //   setH(window.innerHeight);

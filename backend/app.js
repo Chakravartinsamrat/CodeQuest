@@ -96,6 +96,7 @@ app.post("/update-xp", async (req, res) => {
     console.log("inside update server call")
 
     if (!useremail || !xpgained || !npcID) {
+      console.log(req.body)
       return res.status(400).json({ error: "Missing required query parameters." });
     }
 

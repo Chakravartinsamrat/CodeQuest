@@ -161,7 +161,7 @@ export default function GruntInterface({
     }
 
     try {
-      const response = await fetch("http://localhost:3000/update-xp", {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/update-xp`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -317,7 +317,7 @@ export default function GruntInterface({
       isCorrect = analysisResult === "YES";
       if (isCorrect) {
         try {
-          const response = await axios.post("http://localhost:3000/update-xp", {
+          const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/update-xp`, {
             useremail:userEmail, // 👈 no quotes
             xpgained: xpgained, // or Number(10) if needed
             npcID: npcID,

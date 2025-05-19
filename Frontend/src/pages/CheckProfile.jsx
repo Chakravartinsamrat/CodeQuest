@@ -17,11 +17,11 @@ export default function CheckProfile() {
 
       try {
         // 1. Check if user profile exists
-        const res = await axios.get(`http://localhost:5000/api/user/${email}`);
+        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/user/${email}`);
 
         if (!res.data || Object.keys(res.data).length === 0) {
           // 2. If not found, create user
-          await axios.post("http://localhost:5000/api/user", {
+          await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/user`, {
             email,
             xp: 0,
             level: 1,
