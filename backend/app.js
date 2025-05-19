@@ -99,17 +99,18 @@ app.post("/update-xp", async (req, res) => {
       return res.status(400).json({ error: "Missing required query parameters." });
     }
 
-    const user = await User.findOne({ email: useremail });
+    let user = await User.findOne({ email: useremail });
+    console.log(user)
 
     if (!user) {
-      return res.status(404).json({ error: "User not found." });
+      user = await User.create({email:useremail, level:0, xp:0})
     }
 
     const newXP = user.xp + parseInt(xpgained);
     const newLevel = calculateLevel(newXP);
 
     const updatedUser = await User.findOneAndUpdate(
-      { email: useremail },
+      { email: useremail }, 
       {
         $set: { xp: newXP, level: newLevel },
         $addToSet: { npcIDs: npcID },
