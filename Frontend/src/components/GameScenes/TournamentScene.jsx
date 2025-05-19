@@ -7,7 +7,7 @@ export default class GymScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image("Gym-Arena.webp", "/Tournament~4.avif");
+    this.load.image("Tournament", "/Tournament~4.avif");
     this.load.image("player", "/BOSS.png");
     this.load.spritesheet(
       "character",
@@ -21,7 +21,7 @@ export default class GymScene extends Phaser.Scene {
   }
 
   create() {
-    const bg = this.add.image(80, 0, "Gym-Arena.webp").setOrigin(0);
+    const bg = this.add.image(80, 0, "Tournament").setOrigin(0);
     bg.setDisplaySize(1600, 1000); // match world and camera bounds exactly
 
     this.physics.world.setBounds(80, 0, 1600, 1000);
