@@ -31,10 +31,11 @@ app.use('/get-profile', getProfileRoute)
 app.use('/create-course', createCourse)
 app.use('/challenges/programming', getProgrammingChallengesRoute)
 
+app.get("/", (req, res) => res.send("Express on Vercel"));
 
-app.get('/', async (req, res) => {
-  res.send(req.oidc.isAuthenticated() ? 'Logged in' : 'Logged out');
-});
+// app.get('/', async (req, res) => {
+//   res.send(req.oidc.isAuthenticated() ? 'Logged in' : 'Logged out');
+// });
 
 app.get("/api/user/:email", async (req, res) => {
   const email = req.params.email;
@@ -90,7 +91,7 @@ function calculateLevel(xp) {
   }
   return 1;
 }
-app.post("/update-xp", async (req, res) => {
+app.post("/api/update-xp", async (req, res) => {
   try {
     const { useremail, xpgained, npcID } = req.body;
     console.log("inside update server call")
