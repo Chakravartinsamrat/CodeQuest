@@ -4,8 +4,10 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "start": "node app.js",
+  "build": "echo 'No build required'",
+  "vercel-build": "echo 'No build required'"
+},
   "author": "",
   "license": "ISC",
   "dependencies": {
