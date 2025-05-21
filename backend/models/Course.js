@@ -7,16 +7,10 @@ const courseSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
-  description: {
-    type: String,
-    default: ''
+  topics: {
+    type: [String],
+    default: []
   },
-  challenges: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Challenge'
-    }
-  ],
   createdBy: {
     type: String,
   }

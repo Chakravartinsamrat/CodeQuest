@@ -68,6 +68,34 @@ app.post("/api/user", async (req, res) => {
   res.status(201).json(cleanNewUser);
 });
 
+app.post("/api/course", async (req, res) => {
+  try {
+    const { email, title, topics } = req.body;
+
+    const existingUser = await User.findOne({ email });
+    if (!existingUser) {
+      return res.status(404).json({ error: "No user found" });
+    }
+
+    const createdAt = new Date(); 
+
+    const newCourse = new Course({
+      title,
+      topics,
+      createdAt,
+      user: existingUser._id 
+    });
+
+    await newCourse.save();
+
+    res.status(201).json({ message: "Course created", course: newCourse });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Something went wrong" });
+  }
+});
+
+
 const levelThresholds = [
   0,    // Level 1
   50,   // Level 2

@@ -16,7 +16,7 @@ const challengeSchema = new mongoose.Schema({
     default: ''
   },
   xp: {
-    type: Number, // XP is usually a number, not string
+    type: Number,
     required: true
   },
   difficulty: {

@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema({
   npcIDs: {
     type: [String],
     default: [],
-  },
+  }
 }, {
   timestamps: true
 });
